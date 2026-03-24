@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نيكسوس تريد — منصة التداول الذكية</title>
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -535,37 +535,42 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 let ws = null, candleData = [], ta = {}, prevPrice = 0;
 let currentSymbol = '', currentTF = '5m';
 let wsRetries = 0, wsActive = false;
+let chart = null, candles = null;
 
-// ── CHART ────────────────────────────────────────────────────────────────────
-const chart = LightweightCharts.createChart(document.getElementById('chart-container'), {
-  layout: { background: { color: '#03040a' }, textColor: '#4a6080' },
-  grid: { vertLines: { color: 'rgba(26,42,69,0.5)' }, horzLines: { color: 'rgba(26,42,69,0.5)' } },
-  crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-  rightPriceScale: { borderColor: '#1a2a45', textColor: '#4a6080' },
-  timeScale: { borderColor: '#1a2a45', timeVisible: true, secondsVisible: false, rightOffset: 10 },
-});
-const candles = chart.addCandlestickSeries({
-  upColor: '#00e676', downColor: '#ff3d57',
-  borderUpColor: '#00e676', borderDownColor: '#ff3d57',
-  wickUpColor: '#00b050', wickDownColor: '#cc1a30',
-});
-new ResizeObserver(() => {
-  const el = document.querySelector('.chart-wrap');
-  if (el) chart.resize(el.clientWidth, el.clientHeight);
-}).observe(document.querySelector('.chart-wrap'));
+// ── INIT (after page + library fully loaded) ─────────────────────────────────
+window.addEventListener('load', function() {
+  var container = document.getElementById('chart-container');
+  chart = LightweightCharts.createChart(container, {
+    layout: { background: { color: '#03040a' }, textColor: '#4a6080' },
+    grid: { vertLines: { color: 'rgba(26,42,69,0.5)' }, horzLines: { color: 'rgba(26,42,69,0.5)' } },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale: { borderColor: '#1a2a45', textColor: '#4a6080' },
+    timeScale: { borderColor: '#1a2a45', timeVisible: true, secondsVisible: false, rightOffset: 10 },
+  });
+  candles = chart.addCandlestickSeries({
+    upColor: '#00e676', downColor: '#ff3d57',
+    borderUpColor: '#00e676', borderDownColor: '#ff3d57',
+    wickUpColor: '#00b050', wickDownColor: '#cc1a30',
+  });
+  var chartWrap = document.querySelector('.chart-wrap');
+  if (chartWrap) {
+    chart.resize(chartWrap.clientWidth, chartWrap.clientHeight);
+    new ResizeObserver(function() {
+      if (chartWrap && chart) chart.resize(chartWrap.clientWidth, chartWrap.clientHeight);
+    }).observe(chartWrap);
+  }
 
-// ── CLOCK ─────────────────────────────────────────────────────────────────────
-setInterval(() => {
-  document.getElementById('live-clock').textContent =
-    new Date().toLocaleTimeString('ar-EG', { hour12: false });
-}, 1000);
+  setInterval(function() {
+    document.getElementById('live-clock').textContent =
+      new Date().toLocaleTimeString('ar-EG', { hour12: false });
+  }, 1000);
 
-// ── INPUT EVENTS ─────────────────────────────────────────────────────────────
-document.getElementById('coinInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') startSystem();
-});
-document.getElementById('coinInput').addEventListener('input', e => {
-  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  document.getElementById('coinInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') startSystem();
+  });
+  document.getElementById('coinInput').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  });
 });
 
 // ── TF MAP (Binance uses different names) ────────────────────────────────────
@@ -594,7 +599,7 @@ async function startSystem() {
   btn.textContent = '⏳ جاري الاتصال';
   document.getElementById('hdr-pair').textContent = `${coin} / ${quote}`;
   candleData = [];
-  candles.setData([]);
+  if (candles) candles.setData([]);
 
   showLoadProgress('جاري جلب بيانات Binance...', 10);
   setStatus(`جاري الاتصال بـ ${currentSymbol}...`);
