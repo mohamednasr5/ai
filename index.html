@@ -389,7 +389,7 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
         <span id="chart-price">—</span>
         <span id="chart-chg" class="chg-pos">—</span>
         <div style="flex:1"></div>
-        <span style="font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:600;">بيانات Binance مباشر</span>
+        <span style="font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:600;">بيانات OKX مباشر</span>
       </div>
 
       <div class="chart-wrap">
@@ -574,14 +574,36 @@ window.addEventListener('load', function() {
 });
 
 // ── TF MAP (Binance uses different names) ────────────────────────────────────
+// OKX timeframe codes
 const TF_MAP = {
-  '1m': '1m', '3m': '3m', '5m': '5m', '15m': '15m', '30m': '30m',
-  '1h': '1h', '4h': '4h', '1d': '1d', '1w': '1w'
+  '1m':'1m','3m':'3m','5m':'5m','15m':'15m','30m':'30m',
+  '1h':'1H','4h':'4H','1d':'1D','1w':'1W'
+};
+// OKX WS channel names
+const TF_WS = {
+  '1m':'candle1m','3m':'candle3m','5m':'candle5m','15m':'candle15m','30m':'candle30m',
+  '1h':'candle1H','4h':'candle4H','1d':'candle1D','1w':'candle1W'
 };
 const TF_LIMIT = {
-  '1m': 500, '3m': 400, '5m': 400, '15m': 300,
-  '30m': 300, '1h': 300, '4h': 200, '1d': 365, '1w': 200
+  '1m':500,'3m':400,'5m':400,'15m':300,
+  '30m':300,'1h':300,'4h':200,'1d':365,'1w':200
 };
+// OKX instId = coin-quote e.g. BTC-USDT
+function toOkxId(sym) {
+  // sym is like BTCUSDT — split at quote currencies
+  const quotes = ['USDT','USDC','BTC','ETH','BNB'];
+  for (const q of quotes) {
+    if (sym.endsWith(q)) return sym.slice(0, -q.length) + '-' + q;
+  }
+  return sym;
+}
+// CORS proxy chain for OKX REST
+const PROXIES = [
+  u => 'https://corsproxy.io/?' + encodeURIComponent(u),
+  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+  u => 'https://proxy.cors.sh/' + u,
+  u => 'https://thingproxy.freeboard.io/fetch/' + u,
+];
 
 // ── MAIN START ────────────────────────────────────────────────────────────────
 async function startSystem() {
@@ -601,7 +623,7 @@ async function startSystem() {
   candleData = [];
   if (candles) candles.setData([]);
 
-  showLoadProgress('جاري جلب بيانات Binance...', 10);
+  showLoadProgress('جاري جلب بيانات OKX...', 10);
   setStatus(`جاري الاتصال بـ ${currentSymbol}...`);
 
   // Close old WS
@@ -622,22 +644,43 @@ async function startSystem() {
   }
 }
 
-// ── FETCH HISTORY (Binance REST — no CORS issues) ────────────────────────────
+// ── FETCH HISTORY (OKX REST via CORS proxy chain) ───────────────────────────
 async function fetchHistory() {
-  const limit = TF_LIMIT[currentTF] || 300;
-  const interval = TF_MAP[currentTF] || '5m';
-  const url = `https://api.binance.com/api/v3/klines?symbol=${currentSymbol}&interval=${interval}&limit=${limit}`;
+  const limit    = TF_LIMIT[currentTF] || 300;
+  const bar      = TF_MAP[currentTF] || '5m';
+  const instId   = toOkxId(currentSymbol);
+  const apiUrl   = `https://www.okx.com/api/v5/market/candles?instId=${instId}&bar=${bar}&limit=${limit}`;
 
-  showLoadProgress('جاري جلب الشموع التاريخية...', 30);
+  showLoadProgress('جاري جلب الشموع من OKX...', 25);
 
-  const resp = await fetchJSON(url);
+  let json = null;
+  let lastErr = '';
 
-  if (!Array.isArray(resp) || resp.length === 0) {
-    throw new Error(`العملة ${currentSymbol} مش موجودة في Binance`);
+  for (let i = 0; i < PROXIES.length; i++) {
+    const proxyUrl = PROXIES[i](apiUrl);
+    showLoadProgress(`جاري المحاولة ${i+1}/${PROXIES.length}...`, 25 + i * 15);
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 10000);
+      const r = await fetch(proxyUrl, { signal: ctrl.signal });
+      clearTimeout(t);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const text = await r.text();
+      json = JSON.parse(text);
+      if (json && json.code === '0' && json.data && json.data.length > 0) break;
+      json = null; // bad response, try next
+    } catch(e) {
+      lastErr = e.message;
+      json = null;
+    }
   }
 
-  candleData = resp.map(d => ({
-    time:  Math.floor(d[0] / 1000),
+  if (!json || !json.data || json.data.length === 0) {
+    throw new Error(`مش قادر يجيب بيانات ${instId} — تحقق من اسم العملة`);
+  }
+
+  candleData = json.data.reverse().map(d => ({
+    time:  Math.floor(parseInt(d[0]) / 1000),
     open:  parseFloat(d[1]),
     high:  parseFloat(d[2]),
     low:   parseFloat(d[3]),
@@ -645,7 +688,7 @@ async function fetchHistory() {
     vol:   parseFloat(d[5])
   }));
 
-  // De-duplicate by time
+  // De-duplicate & sort
   const seen = new Set();
   candleData = candleData.filter(c => {
     if (seen.has(c.time)) return false;
@@ -657,35 +700,53 @@ async function fetchHistory() {
   updCandleCount();
   computeTA();
 
-  showLoadProgress(`تم تحميل ${candleData.length} شمعة ✓`, 80);
-  toast(`✅ ${candleData.length} شمعة — ${currentSymbol}`);
-  setStatus(`بيانات محملة — ${currentSymbol} — ${currentTF}`);
+  showLoadProgress(`تم تحميل ${candleData.length} شمعة ✓`, 90);
+  toast(`✅ ${candleData.length} شمعة — ${instId}`);
+  setStatus(`بيانات OKX محملة — ${instId} — ${currentTF}`);
 }
 
-// ── FETCH 24H TICKER ─────────────────────────────────────────────────────────
+// ── FETCH 24H TICKER (OKX via proxy) ────────────────────────────────────────
 async function fetch24h() {
-  try {
-    const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${currentSymbol}`;
-    const t = await fetchJSON(url);
-    $('m-high').textContent  = fmtP(parseFloat(t.highPrice));
-    $('m-low').textContent   = fmtP(parseFloat(t.lowPrice));
-    $('m-vol').textContent   = fmtV(parseFloat(t.quoteVolume));
-    $('m-open').textContent  = fmtP(parseFloat(t.openPrice));
-    const chg = parseFloat(t.priceChangePercent).toFixed(2);
-    const chgEl = $('chart-chg');
-    chgEl.textContent = (chg > 0 ? '+' : '') + chg + '%';
-    chgEl.className = chg >= 0 ? 'chg-pos' : 'chg-neg';
-    $('chart-price').textContent = fmtP(parseFloat(t.lastPrice));
-    prevPrice = parseFloat(t.lastPrice);
-  } catch(e) {}
+  const instId = toOkxId(currentSymbol);
+  const apiUrl = `https://www.okx.com/api/v5/market/ticker?instId=${instId}`;
+  for (const proxyFn of PROXIES) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 8000);
+      const r = await fetch(proxyFn(apiUrl), { signal: ctrl.signal });
+      clearTimeout(t);
+      if (!r.ok) continue;
+      const json = JSON.parse(await r.text());
+      if (json.code !== '0' || !json.data || !json.data[0]) continue;
+      const d = json.data[0];
+      $('m-high').textContent  = fmtP(parseFloat(d.high24h));
+      $('m-low').textContent   = fmtP(parseFloat(d.low24h));
+      $('m-vol').textContent   = fmtV(parseFloat(d.volCcy24h || d.vol24h));
+      $('m-open').textContent  = fmtP(parseFloat(d.open24h));
+      const last = parseFloat(d.last), open = parseFloat(d.open24h);
+      const chg = ((last - open) / open * 100).toFixed(2);
+      const chgEl = $('chart-chg');
+      chgEl.textContent = (chg > 0 ? '+' : '') + chg + '%';
+      chgEl.className = chg >= 0 ? 'chg-pos' : 'chg-neg';
+      $('chart-price').textContent = fmtP(last);
+      prevPrice = last;
+      break;
+    } catch(e) {}
+  }
 }
 
-// ── WEBSOCKET (Binance Stream — CORS-free) ───────────────────────────────────
+// ── WEBSOCKET (OKX — no CORS, direct WS) ────────────────────────────────────
+const OKX_WS_URLS = [
+  'wss://ws.okx.com:8443/ws/v5/public',
+  'wss://wsaws.okx.com:8443/ws/v5/public',
+  'wss://wsap.okx.com:8443/ws/v5/public',
+];
 function connectWS() {
-  const interval = TF_MAP[currentTF] || '5m';
-  const stream   = `wss://stream.binance.com:9443/ws/${currentSymbol.toLowerCase()}@kline_${interval}`;
+  const instId  = toOkxId(currentSymbol);
+  const channel = TF_WS[currentTF] || 'candle5m';
+  const wsUrl   = OKX_WS_URLS[wsRetries % OKX_WS_URLS.length];
 
-  try { ws = new WebSocket(stream); }
+  try { ws = new WebSocket(wsUrl); }
   catch(e) { onWsFail('فشل فتح الاتصال'); return; }
 
   const connTimeout = setTimeout(() => {
@@ -695,6 +756,7 @@ function connectWS() {
   ws.onopen = () => {
     clearTimeout(connTimeout);
     wsRetries = 0; wsActive = true;
+    ws.send(JSON.stringify({ op: 'subscribe', args: [{ channel, instId }] }));
     setLive(true);
     hideLoadProgress();
     const btn = $('launchBtn');
@@ -704,23 +766,25 @@ function connectWS() {
     $('aiBtn').disabled = false;
     $('aiBtn').classList.add('pulsing');
     $('chartOverlay').classList.add('hidden');
-    setStatus(`◉ متصل مباشر — ${currentSymbol} — ${currentTF}`);
-    // Ping keepalive
-    ws._ping = setInterval(() => { if (ws.readyState === WebSocket.OPEN) ws.send('ping'); }, 20000);
+    setStatus(`◉ متصل مباشر OKX — ${instId} — ${currentTF}`);
+    ws._ping = setInterval(() => { if (ws.readyState === WebSocket.OPEN) ws.send('ping'); }, 25000);
   };
 
   ws.onmessage = ev => {
+    if (ev.data === 'pong') return;
     let msg;
     try { msg = JSON.parse(ev.data); } catch(e) { return; }
-    if (!msg.k) return;
-    const k = msg.k;
+    if (!msg.data || !Array.isArray(msg.data)) return;
+    // OKX candle format: [ts, o, h, l, c, vol, volCcy, volCcyQuote, confirm]
+    const r = msg.data[0];
+    if (!r || r.length < 5) return;
     const tick = {
-      time:  Math.floor(k.t / 1000),
-      open:  parseFloat(k.o),
-      high:  parseFloat(k.h),
-      low:   parseFloat(k.l),
-      close: parseFloat(k.c),
-      vol:   parseFloat(k.v)
+      time:  Math.floor(parseInt(r[0]) / 1000),
+      open:  parseFloat(r[1]),
+      high:  parseFloat(r[2]),
+      low:   parseFloat(r[3]),
+      close: parseFloat(r[4]),
+      vol:   parseFloat(r[5] || 0)
     };
     if (isNaN(tick.close) || tick.close <= 0) return;
 
@@ -731,7 +795,6 @@ function connectWS() {
     candles.update(tick);
     updCandleCount();
 
-    // Price flash
     const pe = $('chart-price');
     pe.textContent = fmtP(tick.close);
     if (prevPrice && prevPrice !== tick.close) {
@@ -739,7 +802,6 @@ function connectWS() {
       setTimeout(() => { pe.className = ''; }, 600);
     }
     prevPrice = tick.close;
-
     if (candleData.length >= 20) computeTA();
   };
 
@@ -747,14 +809,14 @@ function connectWS() {
 
   ws.onclose = () => {
     clearTimeout(connTimeout);
-    clearInterval(ws._ping);
+    if (ws._ping) clearInterval(ws._ping);
     setLive(false);
     if (wsActive && wsRetries < 4) {
       wsRetries++;
       setStatus(`⟳ إعادة الاتصال (${wsRetries}/4)...`);
       setTimeout(connectWS, 2500 * wsRetries);
     } else if (wsRetries >= 4) {
-      onWsFail('انقطع الاتصال — حاول تاني');
+      onWsFail('انقطع الاتصال — اضغط أعد المحاولة');
     }
   };
 }
@@ -1046,43 +1108,90 @@ Stoch: ${ta.stoch.toFixed(1)} | ATR: ${fmtP(ta.atr)} | BB%: ${ta.bbPct}%
 
 اكتب بأسلوب واضح، مختصر، ومفيد.`;
 
-  try {
-    const res = await fetch('https://text.pollinations.ai/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [
-          { role: 'system', content: 'أنت محلل كريبتو خبير بتتكلم بالعربي المصري البسيط.' },
-          { role: 'user', content: prompt }
-        ],
-        model: 'openai',
-        seed: Date.now()
-      })
-    });
-    const text = await res.text();
-    aiBar.style.display = 'none';
-    aiMsg.style.display = 'none';
-    aiOut.innerHTML = '';
+  // Try multiple free AI endpoints
+  const AI_ENDPOINTS = [
+    // 1. Pollinations (free, no key)
+    async (p) => {
+      const r = await fetch('https://text.pollinations.ai/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: 'أنت محلل كريبتو خبير بتتكلم بالعربي المصري البسيط.' },
+            { role: 'user', content: p }
+          ],
+          model: 'openai-large',
+          seed: Date.now()
+        }),
+        signal: AbortSignal.timeout(30000)
+      });
+      if (!r.ok) throw new Error('Pollinations ' + r.status);
+      const txt = await r.text();
+      if (!txt || txt.length < 30) throw new Error('empty response');
+      return txt;
+    },
+    // 2. Pollinations v2 chat endpoint
+    async (p) => {
+      const r = await fetch('https://text.pollinations.ai/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'openai',
+          messages: [
+            { role: 'system', content: 'أنت محلل كريبتو خبير.' },
+            { role: 'user', content: p }
+          ]
+        }),
+        signal: AbortSignal.timeout(25000)
+      });
+      if (!r.ok) throw new Error('Pollinations-v2 ' + r.status);
+      const json = await r.json();
+      const txt = json?.choices?.[0]?.message?.content || '';
+      if (!txt) throw new Error('empty');
+      return txt;
+    },
+  ];
+
+  let aiText = null;
+  for (let ei = 0; ei < AI_ENDPOINTS.length; ei++) {
+    aiMsg.innerHTML = `⚡ جاري التحليل (محاولة ${ei+1}/${AI_ENDPOINTS.length}) <span class="dots"></span>`;
+    try {
+      aiText = await AI_ENDPOINTS[ei](prompt);
+      break;
+    } catch(e) {
+      if (ei === AI_ENDPOINTS.length - 1) {
+        aiText = null;
+      }
+    }
+  }
+
+  aiBar.style.display = 'none';
+  aiMsg.style.display = 'none';
+  aiOut.innerHTML = '';
+
+  if (!aiText) {
+    aiOut.innerHTML = \`<div style="color:var(--red);font-family:var(--font-ar);line-height:2">
+      ⚠️ مش قادر يوصل للذكاء الاصطناعي دلوقتي.<br>
+      <span style="color:var(--text3);font-size:12px">
+      جرب تاني بعد شوية — أو تحقق من اتصالك بالإنترنت.
+      </span></div>\`;
+  } else {
     let i = 0;
     const cur = document.createElement('span');
     cur.className = 'ai-cursor';
     aiOut.appendChild(cur);
     const tick = setInterval(() => {
-      if (i < text.length) {
-        const ch = text[i];
+      if (i < aiText.length) {
+        const ch = aiText[i];
         if (ch === '\n') cur.before(document.createElement('br'));
         else cur.before(document.createTextNode(ch));
         i++;
       } else { clearInterval(tick); cur.remove(); }
-    }, 10);
-  } catch(err) {
-    aiBar.style.display = 'none';
-    aiMsg.style.display = 'none';
-    aiOut.innerHTML = '<span style="color:var(--red)">⚠️ مش قادر يتصل بالذكاء الاصطناعي. تحقق من النت وحاول تاني.</span>';
-  } finally {
-    $('aiBtn').disabled = false;
-    $('aiBtn').classList.add('pulsing');
+    }, 8);
   }
+
+  $('aiBtn').disabled = false;
+  $('aiBtn').classList.add('pulsing');
 }
 
 // ── TABS ──────────────────────────────────────────────────────────────────────
