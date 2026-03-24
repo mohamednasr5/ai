@@ -58,7 +58,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 
 .app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 
-/* TOP BAR */
 .topbar{
   height:62px;background:rgba(10,16,32,0.97);border-bottom:1px solid var(--border);
   backdrop-filter:blur(20px);display:flex;align-items:center;padding:0 20px;gap:16px;
@@ -127,10 +126,8 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 @keyframes dot-pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 #live-clock{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
 
-/* MAIN BODY */
 .main-body{flex:1;min-height:0;display:grid;grid-template-columns:250px 1fr 300px;gap:0;}
 
-/* LEFT PANEL */
 .left-panel{background:rgba(10,16,32,0.85);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .panel-header{padding:12px 16px;border-bottom:1px solid var(--border);font-family:var(--font-ar);font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;display:flex;align-items:center;gap:8px;}
 .panel-header-dot{width:4px;height:16px;background:var(--gold-g);border-radius:2px;flex-shrink:0;}
@@ -151,7 +148,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 .ind-label{font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:600;}
 .ind-val{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);transition:all 0.4s;}
 
-/* CHART */
 .chart-zone{display:flex;flex-direction:column;background:var(--void);border-right:1px solid var(--border);border-left:1px solid var(--border);overflow:hidden;}
 .chart-topbar{height:50px;background:rgba(10,16,32,0.9);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px;flex-shrink:0;}
 .chart-pair-name{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);letter-spacing:2px;}
@@ -171,7 +167,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 .overlay-title{font-family:var(--font-ar);font-size:20px;font-weight:700;color:var(--text2);}
 .overlay-sub{font-family:var(--font-ar);font-size:13px;color:var(--text3);text-align:center;line-height:2;}
 
-/* Loading bar inside chart overlay */
 .load-progress-wrap{width:280px;display:none;}
 .load-progress-wrap.show{display:block;}
 .load-progress-label{font-family:var(--font-ar);font-size:11px;color:var(--text3);margin-bottom:6px;text-align:center;}
@@ -184,7 +179,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 .mc-lbl{color:var(--text3);}
 .mc-val{color:var(--text);font-weight:500;}
 
-/* RIGHT PANEL */
 .right-panel{background:rgba(10,16,32,0.85);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .r-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
 .r-tab{flex:1;padding:13px 6px;background:transparent;border:none;color:var(--text3);font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.3s;border-bottom:2px solid transparent;}
@@ -247,12 +241,10 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 @keyframes blink-cur{50%{opacity:0;}}
 .ai-placeholder{color:var(--text3);font-style:italic;}
 
-/* BOTTOM BAR */
 .bottom-bar{height:40px;flex-shrink:0;background:rgba(6,11,20,0.97);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:14px;backdrop-filter:blur(10px);overflow:hidden;}
 #bottom-status{font-family:var(--font-ar);font-size:12px;color:var(--text3);white-space:nowrap;font-weight:600;}
 #candle-count{font-family:var(--font-mono);font-size:11px;color:var(--text3);white-space:nowrap;margin-left:auto;}
 
-/* ENTRY ANIMATIONS */
 @keyframes fade-up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 .topbar{animation:fade-up 0.5s ease 0.1s both;}
 .left-panel{animation:fade-up 0.5s ease 0.2s both;}
@@ -260,11 +252,9 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 .right-panel{animation:fade-up 0.5s ease 0.4s both;}
 .bottom-bar{animation:fade-up 0.5s ease 0.5s both;}
 
-/* TOAST */
 .toast{position:fixed;bottom:55px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--panel);border:1px solid var(--border2);padding:9px 18px;border-radius:8px;font-family:var(--font-ar);font-size:12px;font-weight:600;color:var(--text);opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;white-space:nowrap;backdrop-filter:blur(20px);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* TIP CARD */
 .tip-card{background:rgba(240,165,0,0.06);border:1px solid rgba(240,165,0,0.2);border-radius:8px;padding:10px 12px;margin-top:8px;}
 .tip-card .tip-label{font-family:var(--font-ar);font-size:10px;color:var(--gold);font-weight:700;margin-bottom:4px;}
 .tip-card .tip-text{font-family:var(--font-ar);font-size:12px;color:var(--text2);line-height:1.8;}
@@ -281,7 +271,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 
 <div class="app">
 
-  <!-- TOP BAR -->
   <header class="topbar">
     <div class="logo-wrap">
       <div class="logo-hex">
@@ -336,16 +325,13 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
     </div>
   </header>
 
-  <!-- MAIN BODY -->
   <div class="main-body">
 
-    <!-- LEFT PANEL -->
     <aside class="left-panel">
       <div class="panel-header">
         <div class="panel-header-dot"></div>
         بيانات السوق
       </div>
-
       <div class="market-cards">
         <div class="mcard">
           <span class="mcard-label">أعلى 24 ساعة</span>
@@ -364,7 +350,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
           <span class="mcard-val" id="m-open">—</span>
         </div>
       </div>
-
       <div class="indicators-section">
         <div class="panel-header" style="padding:0 0 8px;border:none;">
           <div class="panel-header-dot" style="background:var(--cyan-g)"></div>
@@ -382,7 +367,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
       </div>
     </aside>
 
-    <!-- CENTER CHART -->
     <main class="chart-zone">
       <div class="chart-topbar">
         <span class="chart-pair-name" id="hdr-pair">— / —</span>
@@ -391,7 +375,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
         <div style="flex:1"></div>
         <span style="font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:600;">بيانات OKX مباشر</span>
       </div>
-
       <div class="chart-wrap">
         <div id="chart-container"></div>
         <div class="chart-overlay" id="chartOverlay">
@@ -408,7 +391,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
           </div>
         </div>
       </div>
-
       <div class="mini-bar">
         <div class="mini-chip"><span class="mc-lbl">RSI</span><span class="mc-val" id="mc-rsi">—</span></div>
         <div class="mini-chip"><span class="mc-lbl">MA20</span><span class="mc-val" id="mc-ma20">—</span></div>
@@ -420,17 +402,14 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
       </div>
     </main>
 
-    <!-- RIGHT PANEL -->
     <aside class="right-panel">
       <div class="r-tabs">
         <button class="r-tab active" onclick="rTab(this,'signal')">الإشارة</button>
         <button class="r-tab" onclick="rTab(this,'levels')">المستويات</button>
         <button class="r-tab" onclick="rTab(this,'ai')">الذكاء الاصطناعي</button>
       </div>
-
       <div class="r-body">
 
-        <!-- SIGNAL TAB -->
         <div id="rtab-signal">
           <div class="sig-card wait" id="sigCard">
             <div class="sig-glow"></div>
@@ -438,7 +417,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
             <div class="sig-main" id="sigMain">انتظار...</div>
             <div class="sig-reason" id="sigReason">في انتظار البيانات...</div>
           </div>
-
           <div class="agrid">
             <div class="agrid-cell">
               <div class="agrid-lbl">النتيجة</div>
@@ -457,7 +435,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
               <div class="agrid-val" id="ag-vol" style="color:var(--text3)">—</div>
             </div>
           </div>
-
           <div class="rsi-wrap">
             <div class="rsi-header">
               <span>بيع ←</span>
@@ -469,21 +446,18 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
               <div class="rsi-fill" id="rsiFill" style="width:50%;background:var(--cyan)"></div>
             </div>
           </div>
-
           <div class="sig-card" id="summaryCard" style="border-color:var(--border)">
             <div class="sig-label">ملخص السوق</div>
             <div id="mktSummary" style="font-family:var(--font-ar);font-size:12px;line-height:2;color:var(--text2);">
               اكتب اسم العملة واضغط "ابدأ" للحصول على تحليل شامل
             </div>
           </div>
-
           <div class="tip-card" id="tipCard" style="display:none;">
             <div class="tip-label">💡 نصيحة الذكاء الاصطناعي</div>
             <div class="tip-text" id="tipText">—</div>
           </div>
         </div>
 
-        <!-- LEVELS TAB -->
         <div id="rtab-levels" style="display:none;">
           <div style="font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:700;margin-bottom:8px;">مستويات المقاومة</div>
           <div id="resistList">
@@ -504,7 +478,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
           </div>
         </div>
 
-        <!-- AI TAB -->
         <div id="rtab-ai" style="display:none;" class="ai-panel">
           <div class="ai-status-bar">
             <span class="ai-badge">ذكاء اصطناعي</span>
@@ -521,7 +494,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
     </aside>
   </div>
 
-  <!-- BOTTOM BAR -->
   <footer class="bottom-bar">
     <span id="bottom-status">⬡ نيكسوس تريد — المنصة جاهزة</span>
     <span id="candle-count">0 شمعة</span>
@@ -531,13 +503,13 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);cursor:
 <div class="toast" id="toast"></div>
 
 <script>
-// ── STATE ────────────────────────────────────────────────────────────────────
+// ── STATE ─────────────────────────────────────────────────────────────────────
 let ws = null, candleData = [], ta = {}, prevPrice = 0;
 let currentSymbol = '', currentTF = '5m';
 let wsRetries = 0, wsActive = false;
 let chart = null, candles = null;
 
-// ── INIT (after page + library fully loaded) ─────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', function() {
   var container = document.getElementById('chart-container');
   chart = LightweightCharts.createChart(container, {
@@ -559,12 +531,10 @@ window.addEventListener('load', function() {
       if (chartWrap && chart) chart.resize(chartWrap.clientWidth, chartWrap.clientHeight);
     }).observe(chartWrap);
   }
-
   setInterval(function() {
     document.getElementById('live-clock').textContent =
       new Date().toLocaleTimeString('ar-EG', { hour12: false });
   }, 1000);
-
   document.getElementById('coinInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') startSystem();
   });
@@ -573,13 +543,11 @@ window.addEventListener('load', function() {
   });
 });
 
-// ── TF MAP (Binance uses different names) ────────────────────────────────────
-// OKX timeframe codes
+// ── TF MAPS ───────────────────────────────────────────────────────────────────
 const TF_MAP = {
   '1m':'1m','3m':'3m','5m':'5m','15m':'15m','30m':'30m',
   '1h':'1H','4h':'4H','1d':'1D','1w':'1W'
 };
-// OKX WS channel names
 const TF_WS = {
   '1m':'candle1m','3m':'candle3m','5m':'candle5m','15m':'candle15m','30m':'candle30m',
   '1h':'candle1H','4h':'candle4H','1d':'candle1D','1w':'candle1W'
@@ -588,16 +556,15 @@ const TF_LIMIT = {
   '1m':500,'3m':400,'5m':400,'15m':300,
   '30m':300,'1h':300,'4h':200,'1d':365,'1w':200
 };
-// OKX instId = coin-quote e.g. BTC-USDT
+
 function toOkxId(sym) {
-  // sym is like BTCUSDT — split at quote currencies
   const quotes = ['USDT','USDC','BTC','ETH','BNB'];
   for (const q of quotes) {
     if (sym.endsWith(q)) return sym.slice(0, -q.length) + '-' + q;
   }
   return sym;
 }
-// CORS proxy chain for OKX REST
+
 const PROXIES = [
   u => 'https://corsproxy.io/?' + encodeURIComponent(u),
   u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
@@ -613,20 +580,20 @@ async function startSystem() {
 
   if (!coin) { toast('⚠️ اكتب رمز العملة الأول'); return; }
 
-  currentSymbol = coin + quote;       // e.g. BTCUSDT
+  currentSymbol = coin + quote;
   currentTF     = tf;
 
   const btn = document.getElementById('launchBtn');
   btn.disabled  = true;
   btn.textContent = '⏳ جاري الاتصال';
-  document.getElementById('hdr-pair').textContent = `${coin} / ${quote}`;
+  btn.style.background = '';
+  document.getElementById('hdr-pair').textContent = coin + ' / ' + quote;
   candleData = [];
   if (candles) candles.setData([]);
 
   showLoadProgress('جاري جلب بيانات OKX...', 10);
-  setStatus(`جاري الاتصال بـ ${currentSymbol}...`);
+  setStatus('جاري الاتصال بـ ' + currentSymbol + '...');
 
-  // Close old WS
   if (ws) { try { ws.close(); } catch(e) {} ws = null; }
   wsRetries = 0; wsActive = false;
 
@@ -639,26 +606,25 @@ async function startSystem() {
     hideLoadProgress();
     btn.disabled  = false;
     btn.textContent = '▶ ابدأ';
-    setStatus(`⚠️ ${err.message}`);
-    toast(`⚠️ ${err.message}`);
+    setStatus('⚠️ ' + err.message);
+    toast('⚠️ ' + err.message);
   }
 }
 
-// ── FETCH HISTORY (OKX REST via CORS proxy chain) ───────────────────────────
+// ── FETCH HISTORY ─────────────────────────────────────────────────────────────
 async function fetchHistory() {
-  const limit    = TF_LIMIT[currentTF] || 300;
-  const bar      = TF_MAP[currentTF] || '5m';
-  const instId   = toOkxId(currentSymbol);
-  const apiUrl   = `https://www.okx.com/api/v5/market/candles?instId=${instId}&bar=${bar}&limit=${limit}`;
+  const limit  = TF_LIMIT[currentTF] || 300;
+  const bar    = TF_MAP[currentTF] || '5m';
+  const instId = toOkxId(currentSymbol);
+  const apiUrl = 'https://www.okx.com/api/v5/market/candles?instId=' + instId + '&bar=' + bar + '&limit=' + limit;
 
   showLoadProgress('جاري جلب الشموع من OKX...', 25);
 
   let json = null;
-  let lastErr = '';
 
   for (let i = 0; i < PROXIES.length; i++) {
     const proxyUrl = PROXIES[i](apiUrl);
-    showLoadProgress(`جاري المحاولة ${i+1}/${PROXIES.length}...`, 25 + i * 15);
+    showLoadProgress('جاري المحاولة ' + (i+1) + '/' + PROXIES.length + '...', 25 + i * 15);
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 10000);
@@ -668,15 +634,14 @@ async function fetchHistory() {
       const text = await r.text();
       json = JSON.parse(text);
       if (json && json.code === '0' && json.data && json.data.length > 0) break;
-      json = null; // bad response, try next
+      json = null;
     } catch(e) {
-      lastErr = e.message;
       json = null;
     }
   }
 
   if (!json || !json.data || json.data.length === 0) {
-    throw new Error(`مش قادر يجيب بيانات ${instId} — تحقق من اسم العملة`);
+    throw new Error('مش قادر يجيب بيانات ' + instId + ' — تحقق من اسم العملة');
   }
 
   candleData = json.data.reverse().map(d => ({
@@ -688,7 +653,6 @@ async function fetchHistory() {
     vol:   parseFloat(d[5])
   }));
 
-  // De-duplicate & sort
   const seen = new Set();
   candleData = candleData.filter(c => {
     if (seen.has(c.time)) return false;
@@ -700,15 +664,15 @@ async function fetchHistory() {
   updCandleCount();
   computeTA();
 
-  showLoadProgress(`تم تحميل ${candleData.length} شمعة ✓`, 90);
-  toast(`✅ ${candleData.length} شمعة — ${instId}`);
-  setStatus(`بيانات OKX محملة — ${instId} — ${currentTF}`);
+  showLoadProgress('تم تحميل ' + candleData.length + ' شمعة ✓', 90);
+  toast('✅ ' + candleData.length + ' شمعة — ' + instId);
+  setStatus('بيانات OKX محملة — ' + instId + ' — ' + currentTF);
 }
 
-// ── FETCH 24H TICKER (OKX via proxy) ────────────────────────────────────────
+// ── FETCH 24H ─────────────────────────────────────────────────────────────────
 async function fetch24h() {
   const instId = toOkxId(currentSymbol);
-  const apiUrl = `https://www.okx.com/api/v5/market/ticker?instId=${instId}`;
+  const apiUrl = 'https://www.okx.com/api/v5/market/ticker?instId=' + instId;
   for (const proxyFn of PROXIES) {
     try {
       const ctrl = new AbortController();
@@ -735,12 +699,13 @@ async function fetch24h() {
   }
 }
 
-// ── WEBSOCKET (OKX — no CORS, direct WS) ────────────────────────────────────
+// ── WEBSOCKET ─────────────────────────────────────────────────────────────────
 const OKX_WS_URLS = [
   'wss://ws.okx.com:8443/ws/v5/public',
   'wss://wsaws.okx.com:8443/ws/v5/public',
   'wss://wsap.okx.com:8443/ws/v5/public',
 ];
+
 function connectWS() {
   const instId  = toOkxId(currentSymbol);
   const channel = TF_WS[currentTF] || 'candle5m';
@@ -766,7 +731,7 @@ function connectWS() {
     $('aiBtn').disabled = false;
     $('aiBtn').classList.add('pulsing');
     $('chartOverlay').classList.add('hidden');
-    setStatus(`◉ متصل مباشر OKX — ${instId} — ${currentTF}`);
+    setStatus('◉ متصل مباشر OKX — ' + instId + ' — ' + currentTF);
     ws._ping = setInterval(() => { if (ws.readyState === WebSocket.OPEN) ws.send('ping'); }, 25000);
   };
 
@@ -775,7 +740,6 @@ function connectWS() {
     let msg;
     try { msg = JSON.parse(ev.data); } catch(e) { return; }
     if (!msg.data || !Array.isArray(msg.data)) return;
-    // OKX candle format: [ts, o, h, l, c, vol, volCcy, volCcyQuote, confirm]
     const r = msg.data[0];
     if (!r || r.length < 5) return;
     const tick = {
@@ -813,7 +777,7 @@ function connectWS() {
     setLive(false);
     if (wsActive && wsRetries < 4) {
       wsRetries++;
-      setStatus(`⟳ إعادة الاتصال (${wsRetries}/4)...`);
+      setStatus('⟳ إعادة الاتصال (' + wsRetries + '/4)...');
       setTimeout(connectWS, 2500 * wsRetries);
     } else if (wsRetries >= 4) {
       onWsFail('انقطع الاتصال — اضغط أعد المحاولة');
@@ -824,29 +788,14 @@ function connectWS() {
 function onWsFail(msg) {
   setLive(false);
   wsActive = false;
-  setStatus(`⚠️ ${msg}`);
+  setStatus('⚠️ ' + msg);
   const btn = $('launchBtn');
   btn.disabled = false;
   btn.textContent = '▶ أعد المحاولة';
   btn.style.background = 'linear-gradient(135deg,var(--red2),#991020)';
   hideLoadProgress();
-  toast(`⚠️ ${msg}`);
+  toast('⚠️ ' + msg);
   wsRetries = 0;
-}
-
-// ── FETCH JSON HELPER ─────────────────────────────────────────────────────────
-async function fetchJSON(url, timeout = 10000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeout);
-  try {
-    const r = await fetch(url, { signal: ctrl.signal });
-    clearTimeout(t);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return await r.json();
-  } catch(e) {
-    clearTimeout(t);
-    throw new Error(e.name === 'AbortError' ? 'استغرق الوقت أكتر من اللازم' : 'مشكلة في الاتصال');
-  }
 }
 
 // ── LOAD PROGRESS ─────────────────────────────────────────────────────────────
@@ -888,7 +837,6 @@ function computeTA() {
   const trendClr = trendStr.includes('صاعد') ? 'var(--green)'
                  : trendStr.includes('هابط') ? 'var(--red)' : 'var(--gold)';
 
-  // Score
   let score = 0;
   if (rsiV < 35) score += 2; else if (rsiV > 65) score -= 2;
   else if (rsiV < 45) score += 0.5; else if (rsiV > 55) score -= 0.5;
@@ -903,16 +851,16 @@ function computeTA() {
   let sig, sigClass, sigReason, tip;
   if (score >= 3) {
     sig = '▲ شراء'; sigClass = 'buy';
-    sigReason = `RSI: ${rsiV.toFixed(0)} | السعر فوق المتوسط | MACD ${macdD && macdD.hist > 0 ? '▲' : '▼'} | Stoch: ${stochV.toFixed(0)}`;
-    tip = `الفرصة شايفة كويسة! RSI في ${rsiV.toFixed(0)} يعني السوق مش مشبع بعد. ادخل بحذر وحط وقف خسارة تحت الدعم الأقرب.`;
+    sigReason = 'RSI: ' + rsiV.toFixed(0) + ' | السعر فوق المتوسط | MACD ' + (macdD && macdD.hist > 0 ? '▲' : '▼') + ' | Stoch: ' + stochV.toFixed(0);
+    tip = 'الفرصة شايفة كويسة! RSI في ' + rsiV.toFixed(0) + ' يعني السوق مش مشبع بعد. ادخل بحذر وحط وقف خسارة تحت الدعم الأقرب.';
   } else if (score <= -2) {
     sig = '▼ بيع'; sigClass = 'sell';
-    sigReason = `RSI: ${rsiV.toFixed(0)} | ضغط بيع | السعر تحت المتوسط | Stoch: ${stochV.toFixed(0)}`;
-    tip = `الضغط كتير دلوقتي. لو معاك صفقة شراء، فكر في تأمين الأرباح. RSI في ${rsiV.toFixed(0)} ده تحذير.`;
+    sigReason = 'RSI: ' + rsiV.toFixed(0) + ' | ضغط بيع | السعر تحت المتوسط | Stoch: ' + stochV.toFixed(0);
+    tip = 'الضغط كتير دلوقتي. لو معاك صفقة شراء، فكر في تأمين الأرباح. RSI في ' + rsiV.toFixed(0) + ' ده تحذير.';
   } else {
     sig = '◈ انتظر'; sigClass = 'wait';
-    sigReason = `RSI: ${rsiV.toFixed(0)} | السوق محايد | النتيجة: ${score.toFixed(1)}`;
-    tip = `السوق مش واضح دلوقتي، متدخلش بقوة. انتظر إشارة أوضح، الصبر في التداول بيوفر فلوس كتير!`;
+    sigReason = 'RSI: ' + rsiV.toFixed(0) + ' | السوق محايد | النتيجة: ' + score.toFixed(1);
+    tip = 'السوق مش واضح دلوقتي، متدخلش بقوة. انتظر إشارة أوضح، الصبر في التداول بيوفر فلوس كتير!';
   }
 
   const momentum = macdD ? (macdD.hist > 0.000001 ? '▲ إيجابي' : '▼ سلبي') : '—';
@@ -922,7 +870,6 @@ function computeTA() {
 
   ta = { price: cur, ma20, ma50, ma200, rsi: rsiV, macd: macdD, atr: atrV, bb, bbPct: bbPct.toFixed(1), stoch: stochV, volR, levels: lvls, trend: trendStr, score, sig, sigClass, sigReason, coin: currentSymbol, tf: currentTF };
 
-  // LEFT PANEL
   const inds = {
     'ind-rsi':   { val: rsiV.toFixed(1),        clr: rsiV > 70 ? 'var(--red)' : rsiV < 30 ? 'var(--green)' : 'var(--cyan)' },
     'ind-ma20':  { val: fmtP(ma20),              clr: cur > ma20 ? 'var(--green)' : 'var(--red)' },
@@ -934,13 +881,13 @@ function computeTA() {
     'ind-stoch': { val: stochV.toFixed(1),        clr: stochV > 80 ? 'var(--red)' : stochV < 20 ? 'var(--green)' : 'var(--text)' },
     'ind-vol':   { val: volR.toFixed(2) + 'x ' + volLbl, clr: volClr },
   };
-  Object.entries(inds).forEach(([id, { val, clr }]) => {
+  Object.entries(inds).forEach(function(entry) {
+    var id = entry[0], val = entry[1].val, clr = entry[1].clr;
     const el = $(id); if (!el) return;
     el.textContent = val; el.style.color = clr;
     el.closest('.ind-item').classList.add('loaded');
   });
 
-  // MINI BAR
   $('mc-rsi').textContent = rsiV.toFixed(1);
   $('mc-rsi').style.color = rsiV > 70 ? 'var(--red)' : rsiV < 30 ? 'var(--green)' : 'var(--text)';
   $('mc-ma20').textContent = fmtP(ma20);
@@ -952,9 +899,8 @@ function computeTA() {
   $('mc-trend').textContent = trendStr;
   $('mc-trend').style.color = trendClr;
 
-  // SIGNAL TAB
   const sc = $('sigCard');
-  sc.className = `sig-card ${sigClass}`;
+  sc.className = 'sig-card ' + sigClass;
   $('sigMain').textContent = sig;
   $('sigReason').textContent = sigReason;
   $('ag-score').textContent = score.toFixed(1);
@@ -969,35 +915,27 @@ function computeTA() {
   rf.style.background = rsiV > 70 ? 'var(--red)' : rsiV < 30 ? 'var(--green)' : 'var(--cyan)';
 
   $('mktSummary').innerHTML =
-    `السعر: <b style="color:var(--gold)">${fmtP(cur)}</b> — <span style="color:${trendClr}">${trendStr}</span><br>
-    RSI ${rsiV.toFixed(0)} | MACD ${macdD && macdD.hist > 0 ? '▲ صاعد' : '▼ هابط'} | Stoch ${stochV.toFixed(0)}<br>
-    MA20 <b>${fmtP(ma20)}</b> | MA50 <b>${fmtP(ma50)}</b><br>
-    ATR <b>${fmtP(atrV)}</b> | BB% <b>${bbPct.toFixed(0)}%</b>`;
+    'السعر: <b style="color:var(--gold)">' + fmtP(cur) + '</b> — <span style="color:' + trendClr + '">' + trendStr + '</span><br>' +
+    'RSI ' + rsiV.toFixed(0) + ' | MACD ' + (macdD && macdD.hist > 0 ? '▲ صاعد' : '▼ هابط') + ' | Stoch ' + stochV.toFixed(0) + '<br>' +
+    'MA20 <b>' + fmtP(ma20) + '</b> | MA50 <b>' + fmtP(ma50) + '</b><br>' +
+    'ATR <b>' + fmtP(atrV) + '</b> | BB% <b>' + bbPct.toFixed(0) + '%</b>';
 
-  // TIP CARD
   $('tipCard').style.display = 'block';
   $('tipText').textContent = tip;
 
-  // LEVELS TAB
-  $('resistList').innerHTML = lvls.R.map((v, i) => `
-    <div class="level-item level-R">
-      <span class="level-tag">R${i+1}</span>
-      <span class="level-price">${fmtP(v)}</span>
-      <span class="level-dist">+${((v - cur) / cur * 100).toFixed(2)}%</span>
-    </div>`).join('');
+  $('resistList').innerHTML = lvls.R.map(function(v, i) {
+    return '<div class="level-item level-R"><span class="level-tag">R' + (i+1) + '</span><span class="level-price">' + fmtP(v) + '</span><span class="level-dist">+' + ((v - cur) / cur * 100).toFixed(2) + '%</span></div>';
+  }).join('');
 
-  $('suppList').innerHTML = lvls.S.map((v, i) => `
-    <div class="level-item level-S">
-      <span class="level-tag">S${i+1}</span>
-      <span class="level-price">${fmtP(v)}</span>
-      <span class="level-dist">-${((cur - v) / cur * 100).toFixed(2)}%</span>
-    </div>`).join('');
+  $('suppList').innerHTML = lvls.S.map(function(v, i) {
+    return '<div class="level-item level-S"><span class="level-tag">S' + (i+1) + '</span><span class="level-price">' + fmtP(v) + '</span><span class="level-dist">-' + ((cur - v) / cur * 100).toFixed(2) + '%</span></div>';
+  }).join('');
 
   if (lvls.R.length && lvls.S.length) {
     const risk = cur - lvls.S[0], rew = lvls.R[0] - cur;
     const rr = (rew / risk).toFixed(2);
-    $('rrVal').textContent = `1 : ${rr}`;
-    $('rrDetail').textContent = `المخاطرة ${fmtP(risk)} — العائد ${fmtP(rew)}`;
+    $('rrVal').textContent = '1 : ' + rr;
+    $('rrDetail').textContent = 'المخاطرة ' + fmtP(risk) + ' — العائد ' + fmtP(rew);
   }
 }
 
@@ -1009,7 +947,8 @@ function ema(a, p) {
   for (let i = 1; i < a.length; i++) e = a[i] * k + e * (1 - k);
   return e;
 }
-function rsi(C, p = 14) {
+function rsi(C, p) {
+  p = p || 14;
   if (C.length < p + 1) return 50;
   const sl = C.slice(-p - 1); let g = 0, l = 0;
   for (let i = 1; i < sl.length; i++) { const d = sl[i] - sl[i-1]; if (d > 0) g += d; else l -= d; }
@@ -1029,23 +968,26 @@ function macd(C) {
   const sig = ema(sigArr, Math.min(9, sigArr.length));
   return { line, sig, hist: line - sig };
 }
-function atrCalc(H, L, C, p = 14) {
+function atrCalc(H, L, C, p) {
+  p = p || 14;
   if (H.length < p + 1) return 0;
   const trs = [], st = Math.max(1, H.length - p - 1);
   for (let i = st; i < H.length; i++)
     trs.push(Math.max(H[i]-L[i], Math.abs(H[i]-C[i-1]), Math.abs(L[i]-C[i-1])));
   return trs.reduce((a, b) => a + b, 0) / trs.length;
 }
-function bBands(C, p = 20, m = 2) {
+function bBands(C, p, m) {
+  p = p || 20; m = m || 2;
   if (C.length < p) return null;
   const sl = C.slice(-p), mid = sl.reduce((a, b) => a + b, 0) / p;
   const std = Math.sqrt(sl.reduce((a, b) => a + Math.pow(b - mid, 2), 0) / p);
   return { upper: mid + m * std, middle: mid, lower: mid - m * std };
 }
-function stoch(H, L, C, p = 14) {
+function stoch(H, L, C, p) {
+  p = p || 14;
   if (C.length < p) return 50;
   const sl = H.slice(-p), ll = L.slice(-p);
-  const hh = Math.max(...sl), hl = Math.min(...ll), cur = C[C.length-1];
+  const hh = Math.max.apply(null, sl), hl = Math.min.apply(null, ll), cur = C[C.length-1];
   if (hh === hl) return 50;
   return (cur - hl) / (hh - hl) * 100;
 }
@@ -1057,8 +999,8 @@ function calcLevels(H, L, price) {
   const n = Math.min(150, H.length);
   const rh = H.slice(-n).sort((a, b) => b - a);
   const rl = L.slice(-n).sort((a, b) => a - b);
-  const R = [...new Set(rh.filter(v => v > price * 1.001))].slice(0, 3);
-  const S = [...new Set(rl.filter(v => v < price * 0.999))].reverse().slice(0, 3).reverse();
+  const R = Array.from(new Set(rh.filter(v => v > price * 1.001))).slice(0, 3);
+  const S = Array.from(new Set(rl.filter(v => v < price * 0.999))).reverse().slice(0, 3).reverse();
   return {
     R: R.length ? R : [price*1.01, price*1.02, price*1.03],
     S: S.length ? S : [price*0.99, price*0.98, price*0.97]
@@ -1077,41 +1019,36 @@ async function askAI() {
   aiOut.innerHTML = '';
   aiBar.style.display = 'block';
   aiMsg.style.display = 'block';
-  aiMsg.innerHTML = `⚡ بيحلل ${currentSymbol} <span class="dots"></span>`;
+  aiMsg.innerHTML = '⚡ بيحلل ' + currentSymbol + ' <span class="dots"></span>';
 
   const rsiZone = ta.rsi > 70 ? 'ذروة شراء (Overbought)' : ta.rsi < 30 ? 'ذروة بيع (Oversold)' : 'منطقة محايدة';
   const macdZone = ta.macd && ta.macd.hist > 0 ? 'Bullish' : 'Bearish';
 
-  const prompt = `أنت محلل تداول كريبتو خبير. بتتكلم بأسلوب مصري عربي واضح ومباشر.
+  const prompt = 'أنت محلل تداول كريبتو خبير. بتتكلم بأسلوب مصري عربي واضح ومباشر.\n\n' +
+    '━━━ البيانات ━━━\n' +
+    'الزوج: ' + currentSymbol + ' | الإطار: ' + currentTF + '\n' +
+    'السعر: ' + fmtP(ta.price) + '\n' +
+    'RSI: ' + ta.rsi.toFixed(2) + ' — ' + rsiZone + '\n' +
+    'MA20: ' + fmtP(ta.ma20) + ' | MA50: ' + fmtP(ta.ma50) + ' | MA200: ' + fmtP(ta.ma200) + '\n' +
+    'MACD: ' + (ta.macd ? ta.macd.hist.toFixed(6) : 'N/A') + ' — ' + macdZone + '\n' +
+    'Stoch: ' + ta.stoch.toFixed(1) + ' | ATR: ' + fmtP(ta.atr) + ' | BB%: ' + ta.bbPct + '%\n' +
+    'الحجم: ' + ta.volR.toFixed(2) + 'x المتوسط\n' +
+    'مقاومات: ' + ta.levels.R.map(v => fmtP(v)).join(' / ') + '\n' +
+    'دعوم: ' + ta.levels.S.map(v => fmtP(v)).join(' / ') + '\n' +
+    'الاتجاه: ' + ta.trend + ' | الإشارة: ' + ta.sig + ' | النتيجة: ' + ta.score.toFixed(1) + '\n\n' +
+    '━━━ المطلوب ━━━\n' +
+    'اكتب تحليل بالعربي المصري يشمل:\n' +
+    '1. الوضع الحالي للسوق\n' +
+    '2. الإشارة: شراء ولا بيع ولا انتظار؟ وليه؟\n' +
+    '3. نقطة الدخول المقترحة\n' +
+    '4. وقف الخسارة (Stop Loss)\n' +
+    '5. الهدف الأول (TP1) والثاني (TP2)\n' +
+    '6. نسبة R:R وهل الصفقة تستحق؟\n' +
+    '7. نصيحة أخيرة بأسلوب مصري بسيط\n\n' +
+    'اكتب بأسلوب واضح، مختصر، ومفيد.';
 
-━━━ البيانات ━━━
-الزوج: ${currentSymbol} | الإطار: ${currentTF}
-السعر: ${fmtP(ta.price)}
-RSI: ${ta.rsi.toFixed(2)} — ${rsiZone}
-MA20: ${fmtP(ta.ma20)} | MA50: ${fmtP(ta.ma50)} | MA200: ${fmtP(ta.ma200)}
-MACD: ${ta.macd ? ta.macd.hist.toFixed(6) : 'N/A'} — ${macdZone}
-Stoch: ${ta.stoch.toFixed(1)} | ATR: ${fmtP(ta.atr)} | BB%: ${ta.bbPct}%
-الحجم: ${ta.volR.toFixed(2)}x المتوسط
-مقاومات: ${ta.levels.R.map(v => fmtP(v)).join(' / ')}
-دعوم: ${ta.levels.S.map(v => fmtP(v)).join(' / ')}
-الاتجاه: ${ta.trend} | الإشارة: ${ta.sig} | النتيجة: ${ta.score.toFixed(1)}
-
-━━━ المطلوب ━━━
-اكتب تحليل بالعربي المصري يشمل:
-1. الوضع الحالي للسوق
-2. الإشارة: شراء ولا بيع ولا انتظار؟ وليه؟
-3. نقطة الدخول المقترحة
-4. وقف الخسارة (Stop Loss)
-5. الهدف الأول (TP1) والثاني (TP2)
-6. نسبة R:R وهل الصفقة تستحق؟
-7. نصيحة أخيرة بأسلوب مصري بسيط
-
-اكتب بأسلوب واضح، مختصر، ومفيد.`;
-
-  // Try multiple free AI endpoints
   const AI_ENDPOINTS = [
-    // 1. Pollinations (free, no key)
-    async (p) => {
+    async function(p) {
       const r = await fetch('https://text.pollinations.ai/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1130,8 +1067,7 @@ Stoch: ${ta.stoch.toFixed(1)} | ATR: ${fmtP(ta.atr)} | BB%: ${ta.bbPct}%
       if (!txt || txt.length < 30) throw new Error('empty response');
       return txt;
     },
-    // 2. Pollinations v2 chat endpoint
-    async (p) => {
+    async function(p) {
       const r = await fetch('https://text.pollinations.ai/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1146,22 +1082,20 @@ Stoch: ${ta.stoch.toFixed(1)} | ATR: ${fmtP(ta.atr)} | BB%: ${ta.bbPct}%
       });
       if (!r.ok) throw new Error('Pollinations-v2 ' + r.status);
       const json = await r.json();
-      const txt = json?.choices?.[0]?.message?.content || '';
+      const txt = (json && json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';
       if (!txt) throw new Error('empty');
       return txt;
-    },
+    }
   ];
 
   let aiText = null;
   for (let ei = 0; ei < AI_ENDPOINTS.length; ei++) {
-    aiMsg.innerHTML = `⚡ جاري التحليل (محاولة ${ei+1}/${AI_ENDPOINTS.length}) <span class="dots"></span>`;
+    aiMsg.innerHTML = '⚡ جاري التحليل (محاولة ' + (ei+1) + '/' + AI_ENDPOINTS.length + ') <span class="dots"></span>';
     try {
       aiText = await AI_ENDPOINTS[ei](prompt);
       break;
     } catch(e) {
-      if (ei === AI_ENDPOINTS.length - 1) {
-        aiText = null;
-      }
+      if (ei === AI_ENDPOINTS.length - 1) aiText = null;
     }
   }
 
@@ -1170,11 +1104,12 @@ Stoch: ${ta.stoch.toFixed(1)} | ATR: ${fmtP(ta.atr)} | BB%: ${ta.bbPct}%
   aiOut.innerHTML = '';
 
   if (!aiText) {
-    aiOut.innerHTML = \`<div style="color:var(--red);font-family:var(--font-ar);line-height:2">
-      ⚠️ مش قادر يوصل للذكاء الاصطناعي دلوقتي.<br>
-      <span style="color:var(--text3);font-size:12px">
-      جرب تاني بعد شوية — أو تحقق من اتصالك بالإنترنت.
-      </span></div>\`;
+    // ✅ الإصلاح: استبدال escaped backtick بـ string عادية
+    aiOut.innerHTML = '<div style="color:var(--red);font-family:var(--font-ar);line-height:2">' +
+      '⚠️ مش قادر يوصل للذكاء الاصطناعي دلوقتي.<br>' +
+      '<span style="color:var(--text3);font-size:12px">' +
+      'جرب تاني بعد شوية — أو تحقق من اتصالك بالإنترنت.' +
+      '</span></div>';
   } else {
     let i = 0;
     const cur = document.createElement('span');
@@ -1199,7 +1134,7 @@ function rTab(btn, id) {
   document.querySelectorAll('.r-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   ['signal', 'levels', 'ai'].forEach(t => {
-    $(`rtab-${t}`).style.display = t === id ? 'block' : 'none';
+    $('rtab-' + t).style.display = t === id ? 'block' : 'none';
   });
 }
 
