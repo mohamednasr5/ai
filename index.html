@@ -1072,103 +1072,189 @@ document.getElementById('coinInput').addEventListener('input',e=>{
   e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
 });
 
+// ── CORS PROXY LIST (fallback chain) ─────────
+const PROXIES = [
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://cors-anywhere.herokuapp.com/${url}`,
+];
+
+async function fetchWithProxy(url, timeoutMs=8000){
+  // Try direct first (works in some environments)
+  const directAttempt = async () => {
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), timeoutMs);
+    try{
+      const r = await fetch(url, {signal:ctrl.signal});
+      clearTimeout(t);
+      if(!r.ok) throw new Error('not ok');
+      return await r.json();
+    } catch(e){ clearTimeout(t); throw e; }
+  };
+
+  const proxyAttempt = async (proxyFn) => {
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), timeoutMs);
+    try{
+      const r = await fetch(proxyFn(url), {signal:ctrl.signal});
+      clearTimeout(t);
+      if(!r.ok) throw new Error('not ok');
+      const text = await r.text();
+      return JSON.parse(text);
+    } catch(e){ clearTimeout(t); throw e; }
+  };
+
+  // Try direct
+  try{ return await directAttempt(); } catch(e){}
+  // Try each proxy
+  for(const proxy of PROXIES){
+    try{ return await proxyAttempt(proxy); } catch(e){}
+  }
+  throw new Error('All sources failed');
+}
+
 // ── SYSTEM START ─────────────────────────────
 async function startSystem(){
-  const coin   = document.getElementById('coinInput').value.trim().toUpperCase();
-  const quote  = document.getElementById('quoteSelect').value;
-  const tf     = document.getElementById('tfSelect').value;
+  const coin  = document.getElementById('coinInput').value.trim().toUpperCase();
+  const quote = document.getElementById('quoteSelect').value;
+  const tf    = document.getElementById('tfSelect').value;
 
   if(!coin){ toast('⚠️ أدخل رمز العملة أولاً'); return; }
 
   currentPair = `${coin}-${quote}`;
   currentTF   = tf;
 
-  document.getElementById('launchBtn').disabled = true;
-  document.getElementById('launchBtn').textContent = '⏳ CONNECTING';
+  const btn = document.getElementById('launchBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ CONNECTING';
   document.getElementById('hdr-pair').textContent = `${coin} / ${quote}`;
-  setStatus(`جاري جلب بيانات ${currentPair} ...`);
-
   candleData = [];
   candles.setData([]);
 
-  await fetchHistory();
+  // ── Connect WS immediately — don't wait for REST ──
+  setStatus(`جاري الاتصال بـ ${currentPair} ...`);
   connectWS();
+
+  // ── Fetch history in background (non-blocking) ──
+  fetchHistory().catch(()=>{});
 }
 
-// ── HISTORY (REST) ───────────────────────────
+// ── HISTORY (REST + proxy fallback) ──────────
 async function fetchHistory(){
   const limits={
     '1m':300,'5m':300,'15m':200,'30m':200,
     '1H':300,'4H':200,'1D':300,'1W':104
   };
   const limit = limits[currentTF]||200;
+  const url = `https://www.okx.com/api/v5/market/candles?instId=${currentPair}&bar=${currentTF}&limit=${limit}`;
+
+  setStatus(`⬡ جاري جلب الشموع التاريخية ...`);
 
   try{
-    const res  = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${currentPair}&bar=${currentTF}&limit=${limit}`);
-    const json = await res.json();
+    const json = await fetchWithProxy(url, 10000);
 
     if(json.code==='0' && json.data && json.data.length>0){
-      candleData = json.data.reverse().map(d=>({
+      const parsed = json.data.reverse().map(d=>({
         time: parseInt(d[0])/1000,
         open: parseFloat(d[1]), high: parseFloat(d[2]),
         low:  parseFloat(d[3]), close:parseFloat(d[4]),
         vol:  parseFloat(d[5])
       }));
-      candles.setData(candleData);
+      // Merge: don't overwrite WS data if already started
+      if(candleData.length < 5){
+        candleData = parsed;
+        candles.setData(candleData);
+      } else {
+        // Prepend history before live candles
+        const liveTime = candleData[0].time;
+        const hist = parsed.filter(d=>d.time < liveTime);
+        candleData = [...hist, ...candleData];
+        candles.setData(candleData);
+      }
       updCandleCount();
       computeTA();
-      fetch24h();
+      fetch24h().catch(()=>{});
       toast(`✅ ${candleData.length} شمعة — ${currentPair}`);
+      setStatus(`متصل مباشر — ${currentPair} — ${currentTF}`);
     } else {
-      toast(`⚠️ زوج غير موجود: ${currentPair}`);
+      toast(`⚠️ تحقق من رمز العملة: ${currentPair}`);
+      setStatus(`⚠️ العملة ${currentPair} غير موجودة في OKX`);
     }
-  }catch(e){
-    setStatus('تعذر REST — جاري الاتصال المباشر...');
+  } catch(e){
+    // REST failed but WS might still work — don't block UI
+    setStatus(`⬡ WebSocket فقط — البيانات التاريخية غير متاحة`);
   }
 }
 
 // ── 24H TICKER ───────────────────────────────
 async function fetch24h(){
+  const url = `https://www.okx.com/api/v5/market/ticker?instId=${currentPair}`;
   try{
-    const res  = await fetch(`https://www.okx.com/api/v5/market/ticker?instId=${currentPair}`);
-    const json = await res.json();
-    if(json.code==='0'&&json.data[0]){
+    const json = await fetchWithProxy(url, 8000);
+    if(json.code==='0'&&json.data&&json.data[0]){
       const t=json.data[0];
-      $('m-high').textContent  = fmtP(t.high24h);
-      $('m-low').textContent   = fmtP(t.low24h);
-      $('m-vol').textContent   = fmtV(parseFloat(t.vol24h));
-      $('m-open').textContent  = fmtP(t.open24h);
-
+      $('m-high').textContent = fmtP(t.high24h);
+      $('m-low').textContent  = fmtP(t.low24h);
+      $('m-vol').textContent  = fmtV(parseFloat(t.vol24h));
+      $('m-open').textContent = fmtP(t.open24h);
       const chg = ((parseFloat(t.last)-parseFloat(t.open24h))/parseFloat(t.open24h)*100).toFixed(2);
-      const chgEl = $('chart-chg');
-      chgEl.textContent = (chg>0?'+':'')+chg+'%';
-      chgEl.className   = chg>=0 ? 'chg-pos' : 'chg-neg';
+      const chgEl=$('chart-chg');
+      chgEl.textContent=(chg>0?'+':'')+chg+'%';
+      chgEl.className=chg>=0?'chg-pos':'chg-neg';
     }
   }catch(e){}
 }
 
 // ── WEBSOCKET ────────────────────────────────
+let wsRetries = 0;
 function connectWS(){
   if(ws){try{ws.close();}catch(e){}}
-  ws = new WebSocket('wss://ws.okx.com:8443/ws/v5/public');
+
+  const WS_URLS = [
+    'wss://ws.okx.com:8443/ws/v5/public',
+    'wss://wsaws.okx.com:8443/ws/v5/public',
+    'wss://wsap.okx.com:8443/ws/v5/public',
+  ];
+  const wsUrl = WS_URLS[wsRetries % WS_URLS.length];
+
+  try{ ws = new WebSocket(wsUrl); }
+  catch(e){ onWsFail(); return; }
+
+  // Timeout if no connection in 10s
+  const connTimeout = setTimeout(()=>{
+    if(ws.readyState !== WebSocket.OPEN){
+      ws.close();
+      onWsFail();
+    }
+  }, 10000);
 
   ws.onopen=()=>{
+    clearTimeout(connTimeout);
+    wsRetries = 0;
     ws.send(JSON.stringify({
       op:'subscribe',
       args:[{channel:`candle${currentTF}`,instId:currentPair}]
     }));
     setLive(true);
-    setStatus(`متصل مباشر — ${currentPair} — ${currentTF}`);
-    document.getElementById('launchBtn').textContent='◉ LIVE';
-    document.getElementById('launchBtn').disabled=false;
-    document.getElementById('launchBtn').style.background='linear-gradient(135deg,var(--green2),#00a040)';
+    setStatus(`◉ متصل مباشر — ${currentPair} — ${currentTF}`);
+    const btn = document.getElementById('launchBtn');
+    btn.textContent='◉ LIVE';
+    btn.disabled=false;
+    btn.style.background='linear-gradient(135deg,var(--green2),#00a040)';
     document.getElementById('aiBtn').disabled=false;
     document.getElementById('aiBtn').classList.add('pulsing');
     document.getElementById('chartOverlay').classList.add('hidden');
+
+    // Keep-alive ping every 25s
+    ws._pingInterval = setInterval(()=>{
+      if(ws.readyState===WebSocket.OPEN) ws.send('ping');
+    }, 25000);
   };
 
   ws.onmessage=(ev)=>{
-    const msg=JSON.parse(ev.data);
+    if(ev.data==='pong') return;
+    let msg;
+    try{ msg=JSON.parse(ev.data); } catch(e){ return; }
     if(!msg.data||!msg.arg) return;
     if(!msg.arg.channel.startsWith('candle')) return;
 
@@ -1179,7 +1265,9 @@ function connectWS(){
       low:parseFloat(r[3]),close:parseFloat(r[4]),
       vol:parseFloat(r[5])
     };
+    if(isNaN(tick.close)||tick.close<=0) return;
 
+    // Add/update candle
     const last = candleData[candleData.length-1];
     if(last&&last.time===tick.time) candleData[candleData.length-1]=tick;
     else{ candleData.push(tick); if(candleData.length>600)candleData.shift(); }
@@ -1187,21 +1275,44 @@ function connectWS(){
     candles.update(tick);
     updCandleCount();
 
-    // Price flash
+    // Price display with flash
     const pe=$('chart-price');
     pe.textContent=fmtP(tick.close);
-    if(prevPrice){
+    if(prevPrice&&prevPrice!==tick.close){
       pe.className=tick.close>prevPrice?'price-up':'price-down';
-      setTimeout(()=>pe.className='',600);
+      setTimeout(()=>{ pe.className=''; },600);
     }
     prevPrice=tick.close;
-    computeTA();
+
+    // Compute TA only when we have enough candles
+    if(candleData.length>=20) computeTA();
   };
 
-  ws.onclose=()=>{
+  ws.onerror=()=>{ clearTimeout(connTimeout); };
+
+  ws.onclose=(ev)=>{
+    clearTimeout(connTimeout);
+    clearInterval(ws._pingInterval);
     setLive(false);
-    setStatus('انقطع الاتصال');
+    if(wsRetries<3){
+      wsRetries++;
+      setStatus(`⟳ إعادة الاتصال (${wsRetries}/3)...`);
+      setTimeout(connectWS, 2000*wsRetries);
+    } else {
+      onWsFail();
+    }
   };
+}
+
+function onWsFail(){
+  setLive(false);
+  setStatus('⚠️ تعذر الاتصال — تأكد من الإنترنت وأعد المحاولة');
+  const btn=document.getElementById('launchBtn');
+  btn.disabled=false;
+  btn.textContent='▶ RETRY';
+  btn.style.background='linear-gradient(135deg,var(--red2),#991020)';
+  toast('⚠️ فشل الاتصال بـ OKX — اضغط RETRY');
+  wsRetries=0;
 }
 
 // ── TECHNICAL ANALYSIS ───────────────────────
