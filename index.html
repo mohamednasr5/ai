@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>AI Trend Hunter - OKX</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary: #f3ba2f;
+            --green: #26a69a;
+            --red: #ef5350;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .top-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        select, button {
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: white;
+            font-size: 16px;
+        }
+        button {
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            flex: 1;
+        }
+        button:hover { background: #dca01c; }
+        button:disabled { background: #555; cursor: not-allowed; color: #888; }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        #chart-container {
+            width: 100%;
+            height: 400px;
+            background: #131722;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .price { font-size: 28px; font-weight: bold; margin-top: 10px; }
+        
+        .ai-section {
+            background: #232323;
+            padding: 20px;
+            border-radius: 8px;
+            border-right: 4px solid var(--primary);
+            line-height: 1.6;
+            min-height: 150px;
+        }
+        .loading { color: var(--primary); font-style: italic; display: none; }
+
+        @media (max-width: 768px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📈 FTH - AI Trend Hunter</h1>
+    
+    <div class="top-controls">
+        <select id="pair" style="flex: 1;">
+            <option value="BTC-USDT">BTC/USDT</option>
+            <option value="ETH-USDT">ETH/USDT</option>
+            <option value="SOL-USDT">SOL/USDT</option>
+            <option value="XRP-USDT">XRP/USDT</option>
+        </select>
+        <button id="startBtn" onclick="startSystem()">تشغيل النظام اللحظي</button>
+    </div>
+
+    <div class="main-content">
+        <div id="chart-container"></div>
+
+        <div class="side-panel">
+            <div class="card">
+                <h3 style="margin:0; color: #888;">السعر الحالي</h3>
+                <div id="currentPrice" class="price">0.00 $</div>
+            </div>
+            <div class="card">
+                <h3 style="margin:0; margin-bottom: 10px; color: #888;">التحليل الآلي (آخر 100 شمعة)</h3>
+                <div id="technicalData" style="font-size: 15px;">
+                    جاري تحميل البيانات...
+                </div>
+            </div>
+            <button id="analyzeBtn" onclick="askAI()" disabled>🤖 اطلب نصيحة الذكاء الاصطناعي</button>
+        </div>
+    </div>
+
+    <div class="ai-section">
+        <h3 style="margin-top: 0; color: var(--primary);">رأي الخبير (AI):</h3>
+        <p id="loadingMsg" class="loading">بحلل الشارت وبشوف الدعوم والمقاومات، ثواني يا باشا...</p>
+        <div id="aiOutput">اضغط على زر التشغيل، ثم اطلب النصيحة.</div>
+    </div>
+</div>
+
+<script>
+    let ws = null;
+    let currentPair = "BTC-USDT";
+    let ta_data = {};
+    
+    // إعدادات مكتبة الرسم البياني
+    const chartProperties = {
+        layout: { background: { color: '#131722' }, textColor: '#d1d4dc', },
+        grid: {
+            vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
+            horzLines: { color: 'rgba(42, 46, 57, 0.5)' },
+        },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal, },
+        rightPriceScale: { borderColor: 'rgba(197, 203, 206, 0.8)' },
+        timeScale: { borderColor: 'rgba(197, 203, 206, 0.8)', timeVisible: true, secondsVisible: false },
+    };
+    
+    const chart = LightweightCharts.createChart(document.getElementById('chart-container'), chartProperties);
+    const candleSeries = chart.addCandlestickSeries({
+        upColor: '#26a69a', downColor: '#ef5350', borderVisible: false,
+        wickUpColor: '#26a69a', wickDownColor: '#ef5350',
+    });
+
+    // دالة بدء النظام
+    async function startSystem() {
+        currentPair = document.getElementById('pair').value;
+        document.getElementById('startBtn').innerText = "جاري الاتصال... ⏳";
+        document.getElementById('startBtn').disabled = true;
+        
+        // جلب البيانات التاريخية أولاً لملء الشارت
+        await fetchHistoricalData();
+        // ثم الاتصال اللحظي
+        connectOKX();
+    }
+
+    // جلب شموع سابقة (REST API)
+    async function fetchHistoricalData() {
+        try {
+            // استخدام OKX API العام لجلب آخر 100 شمعة (إطار دقيقة)
+            const res = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${currentPair}&bar=1m&limit=100`);
+            const json = await res.json();
+            
+            if (json.code === "0" && json.data) {
+                // بيانات OKX تأتي من الأحدث للأقدم، يجب عكسها للمكتبة
+                const formattedData = json.data.reverse().map(d => ({
+                    time: parseInt(d[0]) / 1000, // تحويل لثواني
+                    open: parseFloat(d[1]),
+                    high: parseFloat(d[2]),
+                    low: parseFloat(d[3]),
+                    close: parseFloat(d[4])
+                }));
+                
+                candleSeries.setData(formattedData);
+                calculateTA(formattedData);
+            }
+        } catch (e) {
+            console.log("لم نتمكن من جلب التاريخ بسبب سياسة المتصفح (CORS)، سنعتمد على البيانات اللحظية فقط.");
+        }
+    }
+
+    // الاتصال اللحظي بـ OKX WebSockets
+    function connectOKX() {
+        if (ws) ws.close();
+        ws = new WebSocket('wss://ws.okx.com:8443/ws/v5/public');
+        
+        ws.onopen = () => {
+            document.getElementById('startBtn').innerText = `متصل بـ ${currentPair} 🟢`;
+            document.getElementById('startBtn').style.background = "#26a69a";
+            document.getElementById('analyzeBtn').disabled = false;
+            
+            ws.send(JSON.stringify({
+                "op": "subscribe",
+                "args": [{"channel": "candle1m", "instId": currentPair}]
+            }));
+        };
+
+        ws.onmessage = (event) => {
+            const res = JSON.parse(event.data);
+            if (res.data && res.arg.channel === "candle1m") {
+                const raw = res.data[0];
+                const tick = {
+                    time: parseInt(raw[0]) / 1000,
+                    open: parseFloat(raw[1]),
+                    high: parseFloat(raw[2]),
+                    low: parseFloat(raw[3]),
+                    close: parseFloat(raw[4])
+                };
+                
+                // تحديث الشارت والسعر
+                candleSeries.update(tick);
+                document.getElementById('currentPrice').innerText = tick.close.toLocaleString() + " $";
+            }
+        };
+    }
+
+    // حساب الدعم والمقاومة البسيط
+    function calculateTA(data) {
+        if(!data || data.length === 0) return;
+        
+        let highs = data.map(d => d.high);
+        let lows = data.map(d => d.low);
+        let currentPrice = data[data.length - 1].close;
+        let firstPrice = data[0].close;
+        
+        ta_data = {
+            price: currentPrice,
+            resistance: Math.max(...highs),
+            support: Math.min(...lows),
+            trend: currentPrice > firstPrice ? "صاعد (Bullish)" : "هابط (Bearish)"
+        };
+
+        document.getElementById('technicalData').innerHTML = `
+            <div style="margin-bottom:8px">الدعم الأساسي: <b style="color:var(--green)">${ta_data.support}</b></div>
+            <div style="margin-bottom:8px">المقاومة الأساسية: <b style="color:var(--red)">${ta_data.resistance}</b></div>
+            <div>اتجاه السوق: <b>${ta_data.trend}</b></div>
+        `;
+    }
+
+    // الاتصال بالذكاء الاصطناعي المجاني (بدون API Key)
+    async function askAI() {
+        const aiOutput = document.getElementById('aiOutput');
+        const loadingMsg = document.getElementById('loadingMsg');
+
+        aiOutput.innerText = "";
+        loadingMsg.style.display = "block";
+        document.getElementById('analyzeBtn').disabled = true;
+
+        const prompt = `أنت خبير ومحلل تداول مصري محترف.
+        الزوج: ${currentPair}
+        السعر اللحظي: ${ta_data.price}
+        الدعم: ${ta_data.support}
+        المقاومة: ${ta_data.resistance}
+        الترند: ${ta_data.trend}
+        
+        المطلوب: بناءً على الأرقام دي، اديني نصيحة سريعة في فقرة واحدة. هل أشتري ولا أبيع ولا أنتظر؟ اتكلم بلهجة مصرية عامية بسيطة جداً كأننا على القهوة، بدون مقدمات ولا تحذيرات طويلة.`;
+
+        try {
+            // نستخدم Pollinations AI كحل مجاني ومفتوح بالكامل
+            const response = await fetch('https://text.pollinations.ai/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [
+                        { role: 'system', content: 'أنت خبير تداول كริبتو مصري' },
+                        { role: 'user', content: prompt }
+                    ]
+                })
+            });
+
+            const aiText = await response.text();
+            aiOutput.innerHTML = aiText.replace(/\n/g, '<br>');
+        } catch (error) {
+            aiOutput.innerText = "حصلت مشكلة في الاتصال بالذكاء الاصطناعي. جرب تاني.";
+            console.error(error);
+        } finally {
+            loadingMsg.style.display = "none";
+            document.getElementById('analyzeBtn').disabled = false;
+        }
+    }
+
+    // تعديل حجم الشارت تلقائياً عند تغيير حجم النافذة
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('chart-container');
+        chart.resize(container.clientWidth, container.clientHeight);
+    });
+</script>
+</body>
+</html>
