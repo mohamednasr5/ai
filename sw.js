@@ -1,7 +1,7 @@
 const CACHE_NAME = 'crypto-ai-v3';
 const ASSETS = [
   '/',
-  '/index.html',
+  'https://mohamednasr5.github.io/ai/',
   '/manifest.json',
   'https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js',
   'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap'
