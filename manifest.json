@@ -1,43 +1,21 @@
 {
-  "name": "Crypto Analyzer AI",
-  "short_name": "CryptoAI",
-  "description": "محلل العملات الرقمية الذكي - تحليل فني لحظي",
-  "start_url": "/index.html",
+  "name": "المهندس — محلل التداول الذكي",
+  "short_name": "المهندس",
+  "description": "محلل التداول الذكي للعملات الرقمية",
+  "start_url": "https://mohamednasr5.github.io/ai/",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#03040a",
-  "theme_color": "#f0a500",
+  "background_color": "#080910",
+  "theme_color": "#080910",
+  "orientation": "portrait-primary",
   "lang": "ar",
   "dir": "rtl",
   "icons": [
-    { "src": "icons/icon-72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-128.png",  "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-144.png",  "sizes": "144x144", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-152.png",  "sizes": "152x152", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-384.png",  "sizes": "384x384", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png" },
+    { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
-  "screenshots": [
-    { "src": "screenshots/mobile.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow" },
-    { "src": "screenshots/desktop.png","sizes": "1280x720","type": "image/png", "form_factor": "wide" }
-  ],
-  "categories": ["finance", "utilities"],
-  "shortcuts": [
-    {
-      "name": "تحليل BTC",
-      "short_name": "BTC",
-      "description": "تحليل البيتكوين فوراً",
-      "url": "/index.html?coin=BTC",
-      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "تحليل ETH",
-      "short_name": "ETH",
-      "description": "تحليل الإيثيريوم فوراً",
-      "url": "/index.html?coin=ETH",
-      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
-    }
-  ]
+  "screenshots": [],
+  "categories": ["finance", "utilities"]
 }
