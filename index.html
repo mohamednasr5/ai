@@ -968,12 +968,63 @@ const TF_LIMIT = {
 };
 
 function toOkxId(sym) {
+  // قاموس الأسماء الشائعة → الرمز الرسمي على OKX
+  const ALIASES = {
+    'KAT':  'KAT',
+    'OKB':  'OKB',
+    'SOL':  'SOL',
+    'PI':   'PI',
+    'DOGE': 'DOGE',
+    'BTC':  'BTC',
+    'ETH':  'ETH',
+    'BNB':  'BNB',
+    'XRP':  'XRP',
+    'ADA':  'ADA',
+    'DOT':  'DOT',
+    'MATIC':'MATIC',
+    'AVAX': 'AVAX',
+    'LINK': 'LINK',
+    'UNI':  'UNI',
+    'ATOM': 'ATOM',
+    'LTC':  'LTC',
+    'TRX':  'TRX',
+    'SHIB': 'SHIB',
+    'TON':  'TON',
+    'NEAR': 'NEAR',
+    'APT':  'APT',
+    'OP':   'OP',
+    'ARB':  'ARB',
+    'SUI':  'SUI',
+    'INJ':  'INJ',
+    'FET':  'FET',
+    'PEPE': 'PEPE',
+    'WIF':  'WIF',
+    'BONK': 'BONK',
+    'FLOKI':'FLOKI',
+    'NOT':  'NOT',
+  };
+
+  // تنظيف الإدخال
+  sym = sym.trim().toUpperCase();
+
+  // لو موجود في القاموس استخرج الرمز الصحيح
+  const base = ALIASES[sym] || sym;
+
+  // فصل الـ base عن الـ quote
   const quotes = ['USDT','USDC','BTC','ETH','BNB'];
-  for (const q of quotes) {
-    if (sym.endsWith(q)) return sym.slice(0, -q.length) + '-' + q;
+  const sorted = quotes.sort((a, b) => b.length - a.length);
+
+  for (const q of sorted) {
+    if (base.endsWith(q) && base.length > q.length) {
+      return base.slice(0, -q.length) + '-' + q;
+    }
   }
-  return sym;
+
+  // لو مفيش quote → ضيف الـ quote المختار من القائمة
+  const selectedQuote = document.getElementById('quoteSelect').value || 'USDT';
+  return base + '-' + selectedQuote;
 }
+
 
 const PROXIES = [
   u => 'https://corsproxy.io/?' + encodeURIComponent(u),
