@@ -2,8 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="المهندس">
+<meta name="theme-color" content="#080910">
 <title>منصة المهندس لتحليل التداول الذكي v3</title>
+<link rel="manifest" href="manifest.json">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -18,11 +24,15 @@
   --font-mono:'JetBrains Mono',monospace;
   --glow-gold:0 0 20px rgba(240,165,0,0.4);--glow-cyan:0 0 20px rgba(0,212,255,0.4);
   --glow-green:0 0 20px rgba(0,230,118,0.3);--glow-red:0 0 20px rgba(255,61,87,0.3);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-top:env(safe-area-inset-top,0px);
+  --topbar-h:56px;--bottomnav-h:60px;
 }
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;}
 body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 
+/* BG */
 .bg-canvas{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
 .bg-canvas::before{content:'';position:absolute;inset:0;
   background-image:linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),
@@ -36,9 +46,11 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 @keyframes blob-float{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-20px) scale(1.05);}66%{transform:translate(-20px,30px) scale(0.95);}}
 .scanlines{position:fixed;inset:0;z-index:9998;pointer-events:none;
   background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px);}
-.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 
-/* ══ TOOLTIP ══ */
+/* APP SHELL */
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;}
+
+/* TOOLTIP */
 #smart-tooltip{position:fixed;z-index:99999;pointer-events:none;opacity:0;transition:opacity 0.2s ease,transform 0.2s ease;transform:translateY(6px);max-width:270px;}
 #smart-tooltip.visible{opacity:1;transform:translateY(0);}
 .tt-box{background:linear-gradient(135deg,rgba(13,21,38,0.98),rgba(6,11,20,0.98));border:1px solid var(--border2);border-radius:10px;padding:12px 14px;box-shadow:0 8px 32px rgba(0,0,0,0.6),0 0 0 1px rgba(0,212,255,0.08);backdrop-filter:blur(20px);}
@@ -47,295 +59,346 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 .tt-body b{color:var(--gold);}
 .tt-body .tt-green{color:var(--green);font-weight:700;}
 .tt-body .tt-red{color:var(--red);font-weight:700;}
-.tt-body .tt-gold{color:var(--gold);font-weight:700;}
-.tt-body .tt-cyan{color:var(--cyan);font-weight:700;}
 .tt-val-row{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.03);border-radius:5px;padding:4px 8px;margin-top:6px;font-family:var(--font-mono);font-size:11px;}
 .tt-val-row span:first-child{color:var(--text3);font-size:10px;}
 
-/* ══ TOPBAR ══ */
-.topbar{height:62px;background:rgba(10,16,32,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;position:relative;z-index:50;animation:fade-up 0.5s ease 0.1s both;}
+/* TOPBAR */
+.topbar{height:var(--topbar-h);padding-top:var(--safe-top);background:rgba(10,16,32,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);display:flex;align-items:center;padding-right:12px;padding-left:12px;gap:10px;flex-shrink:0;position:relative;z-index:50;}
 .topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--gold),transparent);animation:bar-shimmer 4s ease-in-out infinite;}
 @keyframes bar-shimmer{0%,100%{opacity:0.4;}50%{opacity:1;}}
-.logo-wrap{display:flex;align-items:center;gap:10px;}
-.logo-hex{width:36px;height:36px;flex-shrink:0;}
+.logo-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.logo-hex{width:32px;height:32px;flex-shrink:0;}
 .logo-hex svg{width:100%;height:100%;}
 .logo-text-wrap{display:flex;flex-direction:column;}
-.logo-name{font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:2px;background:var(--gold-g);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;}
-.logo-sub{font-family:var(--font-ar);font-size:10px;color:var(--text3);letter-spacing:1px;}
-.coin-input-zone{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:nowrap;}
-.coin-input-label{font-family:var(--font-ar);font-size:13px;color:var(--text3);white-space:nowrap;font-weight:600;}
-.coin-input{width:110px;background:rgba(0,212,255,0.05);border:1px solid var(--border2);border-radius:6px;padding:8px 12px;color:var(--cyan);font-family:var(--font-display);font-size:14px;font-weight:600;letter-spacing:3px;text-align:center;text-transform:uppercase;outline:none;transition:all 0.3s;caret-color:var(--cyan);}
-.coin-input::placeholder{color:var(--text3);font-size:11px;letter-spacing:1px;font-weight:400;}
+.logo-name{font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:1.5px;background:var(--gold-g);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;}
+.logo-sub{font-family:var(--font-ar);font-size:9px;color:var(--text3);letter-spacing:1px;}
+@media(max-width:380px){.logo-sub{display:none;}.logo-name{font-size:10px;}}
+
+/* COIN INPUT ZONE */
+.coin-input-zone{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;}
+.coin-input-label{font-family:var(--font-ar);font-size:12px;color:var(--text3);white-space:nowrap;font-weight:600;}
+.coin-input{width:90px;background:rgba(0,212,255,0.05);border:1px solid var(--border2);border-radius:6px;padding:7px 8px;color:var(--cyan);font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:2px;text-align:center;text-transform:uppercase;outline:none;transition:all 0.3s;caret-color:var(--cyan);}
+.coin-input::placeholder{color:var(--text3);font-size:10px;letter-spacing:1px;font-weight:400;}
 .coin-input:focus{border-color:var(--cyan);background:rgba(0,212,255,0.08);box-shadow:var(--glow-cyan),inset 0 0 20px rgba(0,212,255,0.05);}
-.sep-text{font-family:var(--font-mono);font-size:14px;color:var(--text3);}
-.quote-select,.tf-select{background:rgba(240,165,0,0.05);border:1px solid var(--border2);border-radius:6px;padding:8px 8px;color:var(--gold);font-family:var(--font-display);font-size:11px;font-weight:600;outline:none;cursor:pointer;transition:all 0.3s;}
+.sep-text{font-family:var(--font-mono);font-size:13px;color:var(--text3);}
+.quote-select,.tf-select{background:rgba(240,165,0,0.05);border:1px solid var(--border2);border-radius:6px;padding:7px 5px;color:var(--gold);font-family:var(--font-display);font-size:10px;font-weight:600;outline:none;cursor:pointer;transition:all 0.3s;}
 .tf-select{background:rgba(124,77,255,0.05);color:#aa88ff;}
 .quote-select option,.tf-select option{background:var(--panel);}
-.launch-btn{padding:9px 18px;background:var(--gold-g);border:none;border-radius:6px;color:#000;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;white-space:nowrap;}
-.launch-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);transform:translateX(-100%);}
-.launch-btn:hover{box-shadow:var(--glow-gold);transform:translateY(-1px);}
-.launch-btn:hover::before{animation:btn-shine 0.5s forwards;}
-.launch-btn:disabled{background:linear-gradient(135deg,#2a3548,#1a2538);color:var(--text3);cursor:not-allowed;transform:none;box-shadow:none;}
-@keyframes btn-shine{to{transform:translateX(100%);}}
-.ai-btn{padding:9px 16px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.3s;white-space:nowrap;position:relative;overflow:hidden;}
-.ai-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(124,77,255,0.1),rgba(0,212,255,0.1));opacity:0;transition:opacity 0.3s;}
-.ai-btn:hover::after{opacity:1;}
-.ai-btn:hover{border-color:var(--purple);color:#aa88ff;box-shadow:0 0 15px rgba(124,77,255,0.3);}
-.ai-btn:disabled{opacity:0.3;cursor:not-allowed;}
-.ai-btn.pulsing{border-color:var(--purple);animation:ai-pulse 2s ease-in-out infinite;}
+.launch-btn{padding:8px 14px;background:var(--gold-g);border:none;border-radius:6px;color:#000;font-family:var(--font-ar);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s;white-space:nowrap;}
+.launch-btn:active{transform:scale(0.95);}
+.launch-btn:disabled{background:linear-gradient(135deg,#2a3548,#1a2538);color:var(--text3);cursor:not-allowed;transform:none;}
+.ai-btn-top{padding:7px 10px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-family:var(--font-ar);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.3s;white-space:nowrap;}
+.ai-btn-top:active{transform:scale(0.95);}
+.ai-btn-top.pulsing{border-color:var(--purple);animation:ai-pulse 2s ease-in-out infinite;}
 @keyframes ai-pulse{0%,100%{box-shadow:0 0 5px rgba(124,77,255,0.3);}50%{box-shadow:0 0 25px rgba(124,77,255,0.6);}}
-.topbar-status{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);box-shadow:0 0 8px var(--text3);transition:all 0.5s;}
-.live-dot.on{background:var(--green);box-shadow:0 0 14px var(--green);animation:dot-pulse 1.5s ease-in-out infinite;}
+.ai-btn-top:disabled{opacity:0.3;cursor:not-allowed;}
+.topbar-status{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:all 0.5s;cursor:help;}
+.live-dot.on{background:var(--green);box-shadow:0 0 10px var(--green);animation:dot-pulse 1.5s ease-in-out infinite;}
 @keyframes dot-pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-#live-clock{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
+#live-clock{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
+@media(max-width:480px){#live-clock{display:none;}.coin-input-label{display:none;}}
 
-/* ══ MAIN BODY ══ */
-.main-body{flex:1;min-height:0;display:grid;grid-template-columns:250px 1fr 340px;}
+/* MAIN CONTENT */
+.main-content{flex:1;min-height:0;position:relative;overflow:hidden;}
 
-/* ══ LEFT PANEL ══ */
-.left-panel{background:rgba(10,16,32,0.85);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;animation:fade-up 0.5s ease 0.2s both;}
-.panel-header{padding:12px 16px;border-bottom:1px solid var(--border);font-family:var(--font-ar);font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;display:flex;align-items:center;gap:8px;}
-.panel-header-dot{width:4px;height:16px;background:var(--gold-g);border-radius:2px;flex-shrink:0;}
-.market-cards{padding:10px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--border);}
-.mcard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;transition:all 0.3s;position:relative;overflow:hidden;cursor:help;}
+/* DESKTOP */
+@media(min-width:769px){
+  .main-content{display:grid;grid-template-columns:240px 1fr 330px;}
+  .left-panel{display:flex!important;}
+  .right-panel{display:flex!important;}
+  .chart-zone{display:flex!important;}
+  .bottom-nav{display:none!important;}
+  .mobile-view{display:none!important;}
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .left-panel,.right-panel{display:none!important;}
+  .chart-zone{display:flex!important;}
+  .mobile-view{display:flex;}
+}
+
+/* LEFT PANEL */
+.left-panel{background:rgba(10,16,32,0.85);border-left:1px solid var(--border);flex-direction:column;overflow:hidden;}
+.panel-header{padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--font-ar);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.panel-header-dot{width:4px;height:14px;background:var(--gold-g);border-radius:2px;flex-shrink:0;}
+.market-cards{padding:8px;display:flex;flex-direction:column;gap:5px;border-bottom:1px solid var(--border);}
+.mcard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;transition:all 0.3s;position:relative;overflow:hidden;cursor:help;}
 .mcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold-g);}
 .mcard:hover{border-color:var(--border2);transform:translateX(-2px);}
-.mcard-label{font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:600;}
-.mcard-val{font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--text);}
-.indicators-section{flex:1;overflow-y:auto;padding:10px;}
+.mcard-label{font-family:var(--font-ar);font-size:10px;color:var(--text3);font-weight:600;}
+.mcard-val{font-family:var(--font-mono);font-size:11px;font-weight:500;color:var(--text);}
+.indicators-section{flex:1;overflow-y:auto;padding:8px;}
 .indicators-section::-webkit-scrollbar{width:3px;}
 .indicators-section::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.ind-item{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:5px;transition:all 0.4s;opacity:0.4;cursor:help;}
+.ind-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:4px;transition:all 0.4s;opacity:0.4;cursor:help;}
 .ind-item.loaded{opacity:1;}
-.ind-item:hover{border-color:var(--border2);background:rgba(17,29,51,0.9);}
-.ind-label{font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:600;}
-.ind-val{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);transition:all 0.4s;}
+.ind-item:hover{border-color:var(--border2);}
+.ind-label{font-family:var(--font-ar);font-size:10px;color:var(--text3);font-weight:600;}
+.ind-val{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text);transition:all 0.4s;}
 
-/* ══ CHART ══ */
-.chart-zone{display:flex;flex-direction:column;background:var(--void);border-right:1px solid var(--border);border-left:1px solid var(--border);overflow:hidden;animation:fade-up 0.5s ease 0.3s both;}
-.chart-topbar{height:50px;background:rgba(10,16,32,0.9);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px;flex-shrink:0;}
-.chart-pair-name{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);letter-spacing:2px;}
-#chart-price{font-family:var(--font-display);font-size:20px;font-weight:900;color:var(--gold);text-shadow:var(--glow-gold);transition:color 0.3s,text-shadow 0.3s;letter-spacing:1px;cursor:help;}
+/* CHART ZONE */
+.chart-zone{flex-direction:column;background:var(--void);overflow:hidden;}
+.chart-topbar{height:46px;background:rgba(10,16,32,0.9);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;}
+.chart-pair-name{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text);letter-spacing:2px;}
+#chart-price{font-family:var(--font-display);font-size:17px;font-weight:900;color:var(--gold);text-shadow:var(--glow-gold);transition:color 0.3s,text-shadow 0.3s;letter-spacing:1px;cursor:help;}
 .price-up{color:var(--green)!important;text-shadow:var(--glow-green)!important;}
 .price-down{color:var(--red)!important;text-shadow:var(--glow-red)!important;}
-#chart-chg{font-family:var(--font-mono);font-size:12px;padding:3px 8px;border-radius:4px;transition:all 0.3s;cursor:help;}
+#chart-chg{font-family:var(--font-mono);font-size:11px;padding:2px 7px;border-radius:4px;transition:all 0.3s;cursor:help;}
 .chg-pos{background:rgba(0,230,118,0.15);color:var(--green);}
 .chg-neg{background:rgba(255,61,87,0.15);color:var(--red);}
 .chart-wrap{flex:1;min-height:0;position:relative;}
 #chart-container{position:absolute;inset:0;}
-.chart-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(3,4,10,0.88);backdrop-filter:blur(4px);z-index:10;transition:all 0.6s;gap:14px;}
+.chart-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(3,4,10,0.88);backdrop-filter:blur(4px);z-index:10;transition:all 0.6s;gap:12px;}
 .chart-overlay.hidden{opacity:0;pointer-events:none;}
-.overlay-icon{font-size:48px;animation:float-icon 3s ease-in-out infinite;}
-@keyframes float-icon{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
-.overlay-title{font-family:var(--font-ar);font-size:20px;font-weight:700;color:var(--text2);}
-.overlay-sub{font-family:var(--font-ar);font-size:13px;color:var(--text3);text-align:center;line-height:2;}
-.load-progress-wrap{width:280px;display:none;}
+.overlay-icon{font-size:42px;animation:float-icon 3s ease-in-out infinite;}
+@keyframes float-icon{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.overlay-title{font-family:var(--font-ar);font-size:18px;font-weight:700;color:var(--text2);}
+.overlay-sub{font-family:var(--font-ar);font-size:12px;color:var(--text3);text-align:center;line-height:2;}
+.load-progress-wrap{width:240px;display:none;}
 .load-progress-wrap.show{display:block;}
-.load-progress-label{font-family:var(--font-ar);font-size:11px;color:var(--text3);margin-bottom:6px;text-align:center;}
+.load-progress-label{font-family:var(--font-ar);font-size:10px;color:var(--text3);margin-bottom:5px;text-align:center;}
 .load-progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
 .load-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--gold));border-radius:2px;transition:width 0.4s ease;}
-.mini-bar{height:34px;background:rgba(10,16,32,0.9);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:18px;overflow-x:auto;flex-shrink:0;}
+.mini-bar{height:32px;background:rgba(10,16,32,0.9);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:14px;overflow-x:auto;flex-shrink:0;}
 .mini-bar::-webkit-scrollbar{display:none;}
-.mini-chip{display:flex;align-items:center;gap:4px;white-space:nowrap;font-family:var(--font-mono);font-size:11px;cursor:help;}
+.mini-chip{display:flex;align-items:center;gap:3px;white-space:nowrap;font-family:var(--font-mono);font-size:10px;cursor:help;}
 .mc-lbl{color:var(--text3);}
 .mc-val{color:var(--text);font-weight:500;}
 
-/* ══ RIGHT PANEL ══ */
-.right-panel{background:rgba(10,16,32,0.85);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;animation:fade-up 0.5s ease 0.4s both;}
+/* RIGHT PANEL */
+.right-panel{background:rgba(10,16,32,0.85);border-right:1px solid var(--border);flex-direction:column;overflow:hidden;}
 .r-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
 .r-tabs::-webkit-scrollbar{display:none;}
-.r-tab{flex:1;padding:12px 2px;background:transparent;border:none;color:var(--text3);font-family:var(--font-ar);font-size:10.5px;font-weight:600;cursor:pointer;transition:all 0.3s;border-bottom:2px solid transparent;white-space:nowrap;min-width:60px;}
+.r-tab{flex:1;padding:10px 2px;background:transparent;border:none;color:var(--text3);font-family:var(--font-ar);font-size:10px;font-weight:600;cursor:pointer;transition:all 0.3s;border-bottom:2px solid transparent;white-space:nowrap;min-width:55px;}
 .r-tab:hover{color:var(--text2);}
 .r-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
-.r-body{flex:1;overflow-y:auto;padding:14px;}
+.r-body{flex:1;overflow-y:auto;padding:12px;}
 .r-body::-webkit-scrollbar{width:3px;}
 .r-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
-/* ══ SIGNAL TAB ══ */
-.sig-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;transition:all 0.5s;}
-.sig-card.buy{border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.05);}
-.sig-card.sell{border-color:rgba(255,61,87,0.4);background:rgba(255,61,87,0.05);}
-.sig-card.wait{border-color:rgba(240,165,0,0.4);background:rgba(240,165,0,0.05);}
-.sig-glow{position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;filter:blur(40px);opacity:0.2;transition:background 0.5s;}
-.buy .sig-glow{background:var(--green);}
-.sell .sig-glow{background:var(--red);}
-.wait .sig-glow{background:var(--gold);}
-.sig-label{font-family:var(--font-ar);font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;letter-spacing:1px;}
-.sig-main{font-family:var(--font-ar);font-size:22px;font-weight:900;transition:all 0.4s;}
-.buy .sig-main{color:var(--green);text-shadow:var(--glow-green);}
-.sell .sig-main{color:var(--red);text-shadow:var(--glow-red);}
-.wait .sig-main{color:var(--gold);text-shadow:var(--glow-gold);}
-.sig-reason{font-family:var(--font-ar);font-size:11px;color:var(--text3);margin-top:6px;line-height:1.7;}
-.agrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px;}
-.agrid-cell{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:9px;text-align:center;transition:border-color 0.4s;cursor:help;}
-.agrid-lbl{font-family:var(--font-ar);font-size:10px;color:var(--text3);font-weight:600;margin-bottom:3px;}
-.agrid-val{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--text);}
-.rsi-wrap{margin-bottom:10px;cursor:help;}
-.rsi-header{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-ar);font-size:10px;color:var(--text3);margin-bottom:5px;font-weight:600;}
-.rsi-track{height:6px;background:var(--card);border-radius:3px;overflow:hidden;position:relative;}
-.rsi-zones{position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,61,87,0.4) 0%,rgba(255,61,87,0.4) 30%,rgba(0,212,255,0.2) 30%,rgba(0,212,255,0.2) 70%,rgba(0,230,118,0.4) 70%,rgba(0,230,118,0.4) 100%);}
-.rsi-fill{height:100%;border-radius:3px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);position:relative;z-index:1;}
-.tip-card{background:rgba(240,165,0,0.06);border:1px solid rgba(240,165,0,0.2);border-radius:8px;padding:10px 12px;margin-top:8px;}
-.tip-card .tip-label{font-family:var(--font-ar);font-size:10px;color:var(--gold);font-weight:700;margin-bottom:4px;}
-.tip-card .tip-text{font-family:var(--font-ar);font-size:12px;color:var(--text2);line-height:1.8;}
+/* MOBILE VIEW */
+.mobile-view{flex:1;min-height:0;flex-direction:column;overflow:hidden;background:rgba(10,16,32,0.85);}
+.mobile-panel{flex:1;overflow-y:auto;padding:14px;display:none;-webkit-overflow-scrolling:touch;}
+.mobile-panel.active{display:block;}
+.mobile-panel::-webkit-scrollbar{display:none;}
 
-/* ══ LEVELS TAB ══ */
-.level-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:6px;margin-bottom:4px;font-family:var(--font-mono);font-size:11px;transition:all 0.3s;cursor:help;}
-.level-item:hover{transform:translateX(-3px);}
-.level-R{background:rgba(255,61,87,0.06);border:1px solid rgba(255,61,87,0.2);}
-.level-S{background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.2);}
-.level-tag{color:var(--text3);font-size:9px;letter-spacing:1px;}
-.level-R .level-price{color:var(--red);}
-.level-S .level-price{color:var(--green);}
-.level-dist{color:var(--text3);font-size:9px;}
-.rr-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;text-align:center;cursor:help;}
-.rr-label{font-family:var(--font-ar);font-size:10px;color:var(--text3);font-weight:700;margin-bottom:5px;}
-.rr-val{font-family:var(--font-display);font-size:24px;font-weight:900;color:var(--gold);text-shadow:var(--glow-gold);}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--bottomnav-h) + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(8,9,16,0.97);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:100;backdrop-filter:blur(20px);}
+.bottom-nav::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--gold),transparent);}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;background:transparent;border:none;color:var(--text3);cursor:pointer;transition:all 0.3s;position:relative;}
+.bnav-btn.active{color:var(--gold);}
+.bnav-btn.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--gold-g);border-radius:0 0 3px 3px;}
+.bnav-btn:active{transform:scale(0.92);}
+.bnav-icon{font-size:18px;line-height:1;}
+.bnav-label{font-family:var(--font-ar);font-size:9px;font-weight:600;}
 
-/* ══ AI TAB ══ */
-.ai-panel{display:flex;flex-direction:column;height:100%;min-height:0;}
-.ai-status-bar{display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:10px;flex-wrap:wrap;gap:6px;}
-.ai-badge{padding:3px 10px;border-radius:4px;font-family:var(--font-ar);font-size:10px;font-weight:700;background:linear-gradient(135deg,var(--purple),#2563eb);color:white;white-space:nowrap;}
-.ai-source-badge{padding:2px 8px;border-radius:4px;font-family:var(--font-mono);font-size:9px;font-weight:600;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:var(--cyan);white-space:nowrap;transition:all 0.3s;}
-.ai-source-badge.active{background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.4);color:var(--green);}
-.ai-source-badge.failed{background:rgba(255,61,87,0.1);border-color:rgba(255,61,87,0.2);color:var(--text3);text-decoration:line-through;}
-.ai-engine-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
-.ai-progress{height:2px;background:var(--border);border-radius:1px;margin-bottom:8px;overflow:hidden;display:none;}
-.ai-progress.show{display:block;}
-.ai-progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--cyan),var(--gold));border-radius:1px;transition:width 0.5s ease;}
-.ai-thinking-bar{display:none;height:2px;background:linear-gradient(90deg,transparent,var(--purple),var(--cyan),transparent);background-size:300% 100%;animation:think-scan 1.2s linear infinite;border-radius:1px;margin-bottom:10px;}
-@keyframes think-scan{from{background-position:100% 0}to{background-position:-200% 0}}
-.ai-thinking-msg{display:none;font-family:var(--font-ar);font-size:11px;color:var(--purple);margin-bottom:8px;font-weight:600;}
-.ai-thinking-msg .dots::after{content:'';animation:dot-cycle 1.5s steps(4) infinite;}
-@keyframes dot-cycle{0%{content:'';}25%{content:'.';}50%{content:'..';}75%{content:'...'}}
-.ai-output{flex:1;font-family:var(--font-ar);font-size:12.5px;line-height:2;color:var(--text);direction:rtl;overflow-y:auto;padding-right:2px;}
-.ai-output::-webkit-scrollbar{width:3px;}
-.ai-output::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.ai-cursor{display:inline-block;width:2px;height:14px;background:var(--cyan);vertical-align:middle;animation:blink-cur 0.7s step-end infinite;margin-right:2px;}
-@keyframes blink-cur{50%{opacity:0;}}
+/* ANIMATIONS */
+@keyframes fade-up{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--bottomnav-h) + 16px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:rgba(13,21,38,0.97);border:1px solid var(--border2);border-radius:10px;padding:10px 20px;font-family:var(--font-ar);font-size:13px;color:var(--text);z-index:99999;opacity:0;transition:all 0.3s ease;pointer-events:none;backdrop-filter:blur(20px);white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media(min-width:769px){.toast{bottom:20px;}}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:linear-gradient(135deg,var(--panel),var(--deep));border:1px solid var(--border2);border-radius:16px;width:100%;max-width:400px;overflow:hidden;animation:fade-up 0.3s ease;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+.modal-title{font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--text);}
+.modal-close{background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.2);border-radius:6px;padding:4px 10px;color:var(--red);cursor:pointer;font-size:14px;}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px;}
+.modal-field{display:flex;flex-direction:column;gap:6px;}
+.modal-label{font-family:var(--font-ar);font-size:12px;color:var(--text3);font-weight:600;}
+.modal-input{background:rgba(0,212,255,0.04);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font-mono);font-size:14px;outline:none;transition:all 0.3s;direction:ltr;text-align:right;}
+.modal-input:focus{border-color:var(--cyan);background:rgba(0,212,255,0.08);}
+.modal-current-price{font-family:var(--font-ar);font-size:12px;color:var(--text3);text-align:center;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px;}
+.modal-footer{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 20px;border-top:1px solid var(--border);}
+.modal-btn-cancel{padding:11px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn-save{padding:11px;background:var(--gold-g);border:none;border-radius:8px;color:#000;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;}
+
+/* SIGNAL CARD */
+.sig-card{padding:16px;border-radius:12px;border:1px solid var(--border);margin-bottom:12px;text-align:center;transition:all 0.4s;}
+.sig-card.buy{background:rgba(0,230,118,0.08);border-color:rgba(0,230,118,0.3);}
+.sig-card.sell{background:rgba(255,61,87,0.08);border-color:rgba(255,61,87,0.3);}
+.sig-card.wait{background:rgba(240,165,0,0.06);border-color:rgba(240,165,0,0.2);}
+.sig-main{font-family:var(--font-ar);font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.sig-reason{font-family:var(--font-ar);font-size:10px;color:var(--text3);line-height:1.8;}
+
+/* SCORE GRID */
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.sg-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;cursor:help;}
+.sg-lbl{font-family:var(--font-ar);font-size:9px;color:var(--text3);margin-bottom:3px;}
+.sg-val{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);}
+
+/* RSI */
+.rsi-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;cursor:help;}
+.rsi-header{font-family:var(--font-mono);font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:600;}
+.rsi-bar-wrap{}
+.rsi-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:4px;}
+.rsi-bar-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
+.rsi-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--text3);}
+
+/* MARKET SUMMARY */
+.mkt-summary-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;cursor:help;}
+.mkt-sum-title{font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:700;margin-bottom:8px;}
+.mkt-sum-body{font-family:var(--font-ar);font-size:11px;color:var(--text2);line-height:2.2;}
+
+/* TIP CARD */
+.tip-card{display:flex;align-items:flex-start;gap:10px;background:rgba(124,77,255,0.06);border:1px solid rgba(124,77,255,0.2);border-radius:10px;padding:12px;margin-bottom:12px;cursor:help;}
+.tip-icon{font-size:16px;flex-shrink:0;}
+.tip-text{font-family:var(--font-ar);font-size:11px;color:var(--text2);line-height:1.9;}
+
+/* LEVELS */
+.levels-section{margin-bottom:14px;}
+.levels-title{font-family:var(--font-ar);font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.levels-r-title{color:var(--red);}
+.levels-s-title{color:var(--green);}
+.level-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:7px;margin-bottom:4px;cursor:help;transition:all 0.3s;}
+.level-R{background:rgba(255,61,87,0.06);border:1px solid rgba(255,61,87,0.15);}
+.level-S{background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.15);}
+.level-tag{font-family:var(--font-ar);font-size:9px;color:var(--text3);}
+.level-price{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);}
+.level-dist{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
+
+/* R:R CARD */
+.rr-card{background:linear-gradient(135deg,rgba(240,165,0,0.06),rgba(240,165,0,0.02));border:1px solid rgba(240,165,0,0.2);border-radius:10px;padding:14px;text-align:center;cursor:help;}
+.rr-title{font-family:var(--font-ar);font-size:11px;color:var(--text3);margin-bottom:6px;}
+.rr-val{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--gold);margin-bottom:4px;}
+.rr-detail{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
+
+/* AI OUTPUT */
+.ai-engine-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.ai-source-badge{padding:3px 8px;border-radius:4px;font-family:var(--font-mono);font-size:9px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text3);transition:all 0.3s;}
+.ai-source-badge.active{background:rgba(124,77,255,0.15);border-color:var(--purple);color:#aa88ff;}
+.ai-source-badge.failed{background:rgba(255,61,87,0.1);border-color:rgba(255,61,87,0.2);color:var(--red);}
+.ai-progress{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.ai-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width 0.4s ease;}
+.ai-thinking-bar{height:2px;background:linear-gradient(90deg,transparent,var(--purple),var(--cyan),transparent);background-size:200%;animation:ai-scan 1.5s linear infinite;display:none;border-radius:1px;}
+.ai-thinking-bar.show{display:block;}
+@keyframes ai-scan{0%{background-position:200%;}100%{background-position:-200%;}}
+.ai-thinking-msg{font-family:var(--font-ar);font-size:11px;color:var(--purple);text-align:center;display:none;padding:4px;}
+.ai-thinking-msg.show{display:block;}
+.dots::after{content:'...';animation:dots 1.5s steps(3,end) infinite;}
+@keyframes dots{0%{content:'';}33%{content:'.';}66%{content:'..' ;}100%{content:'...'}}
+.ai-src-badge-wrap{text-align:center;margin-bottom:8px;}
+.ai-src-badge{padding:4px 12px;background:rgba(124,77,255,0.1);border:1px solid rgba(124,77,255,0.2);border-radius:20px;font-family:var(--font-mono);font-size:10px;color:#aa88ff;cursor:help;}
+.ai-output{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:14px;font-family:var(--font-ar);font-size:12px;color:var(--text2);line-height:2.2;min-height:120px;white-space:pre-wrap;direction:rtl;text-align:right;}
 .ai-placeholder{color:var(--text3);font-style:italic;}
 
-/* ══════════════════════════════════
-   PORTFOLIO TAB
-══════════════════════════════════ */
-.port-section-title{font-family:var(--font-ar);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.port-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
-.trade-mode-toggle{display:flex;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:12px;gap:3px;}
-.trade-mode-btn{flex:1;padding:8px 4px;border:none;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s;background:transparent;color:var(--text3);}
-.trade-mode-btn.active-buy{background:linear-gradient(135deg,rgba(0,230,118,0.2),rgba(0,180,80,0.15));color:var(--green);border:1px solid rgba(0,230,118,0.3);}
-.trade-mode-btn.active-no{background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(0,140,200,0.1));color:var(--cyan);border:1px solid rgba(0,212,255,0.3);}
-.trade-form{background:rgba(0,230,118,0.04);border:1px solid rgba(0,230,118,0.15);border-radius:10px;padding:12px;margin-bottom:12px;transition:all 0.4s;}
-.trade-form.hidden{display:none;}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-.form-row-full{margin-bottom:8px;}
-.form-label{font-family:var(--font-ar);font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;display:block;}
-.form-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;transition:all 0.3s;direction:ltr;text-align:left;}
-.form-input:focus{border-color:var(--green);background:rgba(0,230,118,0.05);box-shadow:0 0 12px rgba(0,230,118,0.1);}
-.form-input::placeholder{color:var(--text3);font-size:11px;}
-.form-hint{font-family:var(--font-ar);font-size:9px;color:var(--text3);margin-top:3px;}
-.fill-price-btn{padding:6px 10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:5px;color:var(--cyan);font-family:var(--font-ar);font-size:10px;font-weight:600;cursor:pointer;transition:all 0.3s;white-space:nowrap;}
-.fill-price-btn:hover{background:rgba(0,212,255,0.2);}
-.save-trade-btn{width:100%;padding:10px;background:linear-gradient(135deg,var(--green2),#007a30);border:none;border-radius:7px;color:#000;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.3s;margin-top:4px;}
-.save-trade-btn:hover{box-shadow:var(--glow-green);transform:translateY(-1px);}
-.port-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;}
-.port-card.profit-card{border-color:rgba(0,230,118,0.35);background:rgba(0,230,118,0.04);}
-.port-card.loss-card{border-color:rgba(255,61,87,0.35);background:rgba(255,61,87,0.04);}
-.port-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.port-coin-name{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text);letter-spacing:2px;}
-.port-pnl-badge{padding:3px 10px;border-radius:5px;font-family:var(--font-mono);font-size:12px;font-weight:700;}
+/* TRADE */
+.trade-mode-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.trade-mode-btn{padding:10px 6px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--font-ar);font-size:11px;font-weight:700;cursor:pointer;transition:all 0.3s;}
+.trade-mode-btn.active-no{background:rgba(0,212,255,0.08);border-color:var(--cyan);color:var(--cyan);}
+.trade-mode-btn.active-buy{background:rgba(0,230,118,0.08);border-color:var(--green);color:var(--green);}
+.port-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;}
+.profit-card{border-color:rgba(0,230,118,0.3);background:linear-gradient(135deg,rgba(0,230,118,0.04),var(--card));}
+.loss-card{border-color:rgba(255,61,87,0.3);background:linear-gradient(135deg,rgba(255,61,87,0.04),var(--card));}
+.pc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.pc-coin-wrap{display:flex;align-items:center;gap:8px;}
+.pc-coin{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text);letter-spacing:1.5px;}
+.port-pnl-badge{padding:3px 8px;border-radius:5px;font-family:var(--font-mono);font-size:12px;font-weight:700;}
 .pnl-pos{background:rgba(0,230,118,0.15);color:var(--green);}
 .pnl-neg{background:rgba(255,61,87,0.15);color:var(--red);}
-.port-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
-.port-cell{background:rgba(255,255,255,0.02);border-radius:6px;padding:7px 9px;}
-.port-cell-lbl{font-family:var(--font-ar);font-size:9px;color:var(--text3);font-weight:600;margin-bottom:2px;}
-.port-cell-val{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text);}
-.trade-recommendation{border-radius:8px;padding:10px 12px;margin-bottom:8px;}
-.rec-header{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.pc-delete{background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.2);border-radius:6px;padding:4px 8px;color:var(--red);cursor:pointer;font-size:13px;}
+.pc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.pc-stat{background:rgba(255,255,255,0.03);border-radius:7px;padding:8px 10px;}
+.pc-stat-lbl{display:block;font-family:var(--font-ar);font-size:9px;color:var(--text3);margin-bottom:3px;}
+.pc-stat-val{display:block;font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);}
+.pnl-progress{margin-bottom:12px;}
+.pnl-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:4px;}
+.pnl-track{height:8px;background:var(--border);border-radius:4px;overflow:visible;position:relative;}
+.pnl-fill{height:100%;border-radius:4px;transition:width 0.5s ease;position:relative;z-index:1;}
+.entry-marker{position:absolute;top:50%;width:3px;height:14px;background:rgba(255,255,255,0.5);border-radius:1px;transform:translateY(-50%);z-index:2;transition:right 0.5s ease;}
+.targets-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
+.target-item{border-radius:8px;padding:8px 6px;text-align:center;border:1px solid var(--border);}
+.target-tp1{background:rgba(0,230,118,0.06);border-color:rgba(0,230,118,0.2);}
+.target-tp2{background:rgba(0,212,255,0.06);border-color:rgba(0,212,255,0.2);}
+.target-sl{background:rgba(255,61,87,0.06);border-color:rgba(255,61,87,0.2);}
+.target-lbl{display:block;font-family:var(--font-ar);font-size:9px;color:var(--text3);margin-bottom:3px;}
+.target-price{display:block;font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--text);}
+.target-pct{display:block;font-family:var(--font-mono);font-size:9px;color:var(--text3);}
+.trade-recommendation{border-radius:10px;padding:12px;margin-top:10px;border:1px solid var(--border);}
+.rec-sell-now{background:rgba(255,61,87,0.08);border-color:rgba(255,61,87,0.3);}
+.rec-tp{background:rgba(0,230,118,0.06);border-color:rgba(0,230,118,0.25);}
+.rec-hold{background:rgba(240,165,0,0.06);border-color:rgba(240,165,0,0.2);}
+.rec-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .rec-icon{font-size:16px;}
-.rec-title{font-family:var(--font-ar);font-size:12px;font-weight:700;}
-.rec-body{font-family:var(--font-ar);font-size:11px;line-height:1.9;color:var(--text2);}
-.rec-sell-now{background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.3);}
-.rec-sell-now .rec-title{color:var(--red);}
-.rec-hold{background:rgba(240,165,0,0.06);border:1px solid rgba(240,165,0,0.25);}
-.rec-hold .rec-title{color:var(--gold);}
-.rec-tp{background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.25);}
-.rec-tp .rec-title{color:var(--green);}
-.rec-wait-entry{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.25);}
-.rec-wait-entry .rec-title{color:var(--cyan);}
-.targets-row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
-.target-item{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:6px;font-family:var(--font-mono);font-size:11px;}
-.target-tp1{background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);}
-.target-tp2{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);}
-.target-sl{background:rgba(255,61,87,0.06);border:1px solid rgba(255,61,87,0.2);}
-.target-lbl{color:var(--text3);font-size:9px;letter-spacing:1px;}
-.target-price{font-weight:700;}
-.target-tp1 .target-price{color:var(--green);}
-.target-tp2 .target-price{color:var(--cyan);}
-.target-sl .target-price{color:var(--red);}
-.target-pct{font-size:9px;color:var(--text3);}
-.progress-section{margin-bottom:8px;}
-.progress-label{display:flex;justify-content:space-between;font-family:var(--font-ar);font-size:10px;color:var(--text3);margin-bottom:4px;}
-.progress-track{height:8px;background:var(--card);border-radius:4px;overflow:hidden;position:relative;}
-.progress-sl-zone{position:absolute;right:0;top:0;bottom:0;background:rgba(255,61,87,0.2);}
-.progress-tp-zone{position:absolute;left:0;top:0;bottom:0;background:rgba(0,230,118,0.15);}
-.progress-fill{height:100%;border-radius:4px;transition:width 0.8s ease;position:relative;z-index:2;}
-.progress-marker{position:absolute;top:0;bottom:0;width:2px;background:var(--text3);z-index:3;transition:right 0.8s ease;}
-.no-trade-panel{text-align:center;padding:20px 10px;}
-.no-trade-icon{font-size:36px;margin-bottom:10px;}
-.no-trade-title{font-family:var(--font-ar);font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;}
-.no-trade-sub{font-family:var(--font-ar);font-size:11px;color:var(--text3);line-height:1.8;}
-.entry-suggestion{background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:12px;}
-.entry-title{font-family:var(--font-ar);font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.entry-row{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:rgba(255,255,255,0.02);border-radius:5px;margin-bottom:4px;}
-.entry-row-lbl{font-family:var(--font-ar);font-size:10px;color:var(--text3);font-weight:600;}
+.rec-title{font-family:var(--font-ar);font-size:12px;font-weight:700;color:var(--text);}
+.rec-body{font-family:var(--font-ar);font-size:11px;color:var(--text2);line-height:2;}
+.entry-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.entry-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.entry-row:last-of-type{border-bottom:none;}
+.entry-row-lbl{font-family:var(--font-ar);font-size:11px;color:var(--text3);}
 .entry-row-val{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);}
-.entry-status{text-align:center;padding:8px;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:700;margin-top:8px;}
-.entry-ok{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:var(--green);}
-.entry-wait{background:rgba(240,165,0,0.08);border:1px solid rgba(240,165,0,0.25);color:var(--gold);}
-.entry-bad{background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);color:var(--red);}
-.del-trade-btn{padding:5px 10px;background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.25);border-radius:5px;color:var(--red);font-family:var(--font-ar);font-size:10px;font-weight:600;cursor:pointer;transition:all 0.3s;}
-.del-trade-btn:hover{background:rgba(255,61,87,0.2);}
+.entry-status{padding:8px 14px;border-radius:8px;font-family:var(--font-ar);font-size:12px;font-weight:700;text-align:center;margin-top:10px;}
+.est-buy{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.3);}
+.est-wait{background:rgba(240,165,0,0.1);color:var(--gold);border:1px solid rgba(240,165,0,0.3);}
+.est-sell{background:rgba(255,61,87,0.1);color:var(--red);border:1px solid rgba(255,61,87,0.3);}
+.add-trade-btn{padding:11px;background:var(--gold-g);border:none;border-radius:10px;color:#000;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.3s;}
 
-/* ══ BOTTOM BAR ══ */
-.bottom-bar{height:44px;flex-shrink:0;background:rgba(6,11,20,0.97);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:14px;backdrop-filter:blur(10px);overflow:hidden;animation:fade-up 0.5s ease 0.5s both;}
-#bottom-status{font-family:var(--font-ar);font-size:12px;color:var(--text3);white-space:nowrap;font-weight:600;}
-#candle-count{font-family:var(--font-mono);font-size:11px;color:var(--text3);white-space:nowrap;}
-.footer-credit{margin-right:auto;display:flex;align-items:center;gap:8px;}
-.footer-credit-text{font-family:var(--font-ar);font-size:11px;color:var(--text3);white-space:nowrap;}
-.footer-credit-text span{color:var(--gold);font-weight:700;}
-.fb-link{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#1877f2,#0d5dbf);transition:all 0.3s;flex-shrink:0;text-decoration:none;box-shadow:0 0 10px rgba(24,119,242,0.3);}
-.fb-link:hover{transform:scale(1.15);box-shadow:0 0 18px rgba(24,119,242,0.6);}
-.fb-link svg{width:14px;height:14px;fill:white;}
+/* MOBILE PANELS */
+.m-sig-hero{padding:20px;text-align:center;border-radius:14px;margin-bottom:14px;border:1px solid var(--border);}
+.m-sig-hero.sig-buy{background:rgba(0,230,118,0.08);border-color:rgba(0,230,118,0.3);}
+.m-sig-hero.sig-sell{background:rgba(255,61,87,0.08);border-color:rgba(255,61,87,0.3);}
+.m-sig-hero.sig-wait{background:rgba(240,165,0,0.08);border-color:rgba(240,165,0,0.3);}
+.m-sig-icon{font-size:36px;margin-bottom:6px;}
+.m-sig-text{font-family:var(--font-ar);font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.m-sig-score{font-family:var(--font-mono);font-size:14px;font-weight:600;}
+.m-rsi-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;}
+.m-rsi-header{display:flex;justify-content:space-between;font-family:var(--font-ar);font-size:12px;font-weight:700;margin-bottom:8px;}
+.m-reasons-list{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;}
+.m-reason-item{font-family:var(--font-ar);font-size:12px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.8;}
+.m-reason-item:last-child{border-bottom:none;}
+.m-levels-mini{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.m-level-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);}
+.m-level-row:last-child{border-bottom:none;}
+.ml-lbl{font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:600;}
+.ml-val{font-family:var(--font-mono);font-size:12px;font-weight:600;}
+.ml-dist{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
+.m-rr-card{background:linear-gradient(135deg,rgba(240,165,0,0.06),rgba(240,165,0,0.02));border:1px solid rgba(240,165,0,0.2);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;}
+.m-rr-title{font-family:var(--font-ar);font-size:11px;color:var(--text3);margin-bottom:6px;}
+.m-rr-val{font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:4px;}
+.m-rr-detail{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
+.m-tip-card{display:flex;align-items:flex-start;gap:10px;background:rgba(124,77,255,0.06);border:1px solid rgba(124,77,255,0.2);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-family:var(--font-ar);font-size:12px;color:var(--text2);line-height:1.9;}
+.m-tip-icon{font-size:18px;flex-shrink:0;}
+.m-market-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.m-mkt-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 6px;text-align:center;cursor:help;}
+.m-mkt-lbl{display:block;font-family:var(--font-ar);font-size:9px;color:var(--text3);margin-bottom:3px;}
+.m-mkt-val{display:block;font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--text);}
+.m-ind-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.m-ind-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:help;}
+.m-ind-card:active{transform:scale(0.97);}
+.m-ind-lbl{font-family:var(--font-ar);font-size:10px;color:var(--text3);font-weight:600;margin-bottom:4px;}
+.m-ind-val{font-family:var(--font-mono);font-size:15px;font-weight:700;margin-bottom:3px;transition:all 0.4s;}
+.m-ind-desc{font-family:var(--font-ar);font-size:9px;color:var(--text3);}
+.m-trade-mode-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.m-mode-btn{padding:12px 8px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:var(--font-ar);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s;}
+.m-mode-btn.active-no{background:rgba(0,212,255,0.08);border-color:var(--cyan);color:var(--cyan);}
+.m-mode-btn.active-buy{background:rgba(0,230,118,0.08);border-color:var(--green);color:var(--green);}
+.m-no-trade-msg{text-align:center;padding:30px 20px;}
+.m-no-trade-icon{font-size:40px;margin-bottom:10px;}
+.m-no-trade-text{font-family:var(--font-ar);font-size:14px;color:var(--text2);margin-bottom:16px;}
+.m-reg-btn{padding:12px 20px;background:var(--gold-g);border:none;border-radius:10px;color:#000;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;width:100%;}
+.m-ai-header{text-align:center;margin-bottom:14px;}
+.m-ai-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--gold);margin-bottom:4px;}
+.m-ai-sub{font-family:var(--font-ar);font-size:11px;color:var(--text3);}
+.m-empty-state{text-align:center;padding:40px 20px;font-family:var(--font-ar);font-size:14px;color:var(--text3);}
 
-@keyframes fade-up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-.toast{position:fixed;bottom:55px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--panel);border:1px solid var(--border2);padding:9px 18px;border-radius:8px;font-family:var(--font-ar);font-size:12px;font-weight:600;color:var(--text);opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;white-space:nowrap;backdrop-filter:blur(20px);}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
-/* modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
-.modal-overlay.show{opacity:1;pointer-events:all;}
-.modal-box{background:var(--panel);border:1px solid var(--border2);border-radius:14px;padding:24px;width:340px;max-width:90vw;transform:scale(0.9);transition:transform 0.3s;}
-.modal-overlay.show .modal-box{transform:scale(1);}
-.modal-title{font-family:var(--font-ar);font-size:16px;font-weight:700;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.modal-label{font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:700;margin-bottom:5px;display:block;margin-top:10px;}
-.modal-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;color:var(--text);font-family:var(--font-mono);font-size:14px;outline:none;transition:all 0.3s;direction:ltr;}
-.modal-input:focus{border-color:var(--cyan);box-shadow:var(--glow-cyan);}
-.modal-btns{display:flex;gap:8px;margin-top:16px;}
-.modal-save{flex:1;padding:10px;background:var(--gold-g);border:none;border-radius:7px;color:#000;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.3s;}
-.modal-save:hover{box-shadow:var(--glow-gold);}
-.modal-cancel{flex:1;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-family:var(--font-ar);font-size:13px;cursor:pointer;transition:all 0.3s;}
-.modal-cancel:hover{border-color:var(--red);color:var(--red);}
+/* SAFE AREA */
+@media(max-width:768px){.main-content{padding-bottom:calc(var(--bottomnav-h) + var(--safe-bottom));}}
+@media(max-width:768px){.desktop-only{display:none!important;}}
+@media(min-width:769px){.mobile-only{display:none!important;}}
 </style>
 </head>
 <body>
-
-<div id="smart-tooltip">
-  <div class="tt-box">
-    <div class="tt-title"><span id="tt-icon">📊</span><span id="tt-title-text">المؤشر</span></div>
-    <div class="tt-body" id="tt-body"></div>
-  </div>
-</div>
 
 <div class="bg-canvas">
   <div class="blob blob-1"></div>
@@ -344,300 +407,264 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 </div>
 <div class="scanlines"></div>
 
-<!-- MODAL: إضافة صفقة -->
-<div class="modal-overlay" id="tradeModal">
+<div id="smart-tooltip">
+  <div class="tt-box">
+    <div class="tt-title"><span id="tt-icon"></span><span id="tt-title-text"></span></div>
+    <div class="tt-body" id="tt-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div class="modal-overlay" id="tradeModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
-    <div class="modal-title">📥 تسجيل صفقة شراء</div>
-    <label class="modal-label">سعر الشراء</label>
-    <input type="number" class="modal-input" id="modal-buy-price" placeholder="مثال: 95000" step="any"/>
-    <label class="modal-label">الكمية (اختياري)</label>
-    <input type="number" class="modal-input" id="modal-qty" placeholder="مثال: 0.01" step="any"/>
-    <label class="modal-label">المبلغ الإجمالي بالدولار (اختياري)</label>
-    <input type="number" class="modal-input" id="modal-total" placeholder="مثال: 1000" step="any"/>
-    <p style="font-family:var(--font-ar);font-size:10px;color:var(--text3);margin-top:8px;line-height:1.7;">
-      اكتب الكمية أو المبلغ الإجمالي — أي منهم كافي.
-    </p>
-    <div class="modal-btns">
-      <button class="modal-save" onclick="saveTrade()">💾 سجّل الصفقة</button>
-      <button class="modal-cancel" onclick="closeModal()">إلغاء</button>
+    <div class="modal-header">
+      <span class="modal-title">📥 تسجيل صفقة جديدة</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label class="modal-label">سعر الشراء</label>
+        <input id="modal-buy-price" class="modal-input" type="number" step="any" placeholder="0.00" oninput="calcModalTotal()">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">الكمية</label>
+        <input id="modal-qty" class="modal-input" type="number" step="any" placeholder="0.00" oninput="calcModalTotal()">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">أو المبلغ الإجمالي ($)</label>
+        <input id="modal-total" class="modal-input" type="number" step="any" placeholder="0.00" oninput="calcModalQty()">
+      </div>
+      <div class="modal-current-price">السعر الحالي: <span style="color:var(--gold);font-family:var(--font-mono)" id="modal-cur-price">—</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn-cancel" onclick="closeModal()">إلغاء</button>
+      <button class="modal-btn-save" onclick="saveTrade()">✅ حفظ الصفقة</button>
     </div>
   </div>
 </div>
 
 <div class="app">
-  <header class="topbar">
-    <div class="logo-wrap" data-tt="platform">
+  <div class="topbar">
+    <div class="logo-wrap">
       <div class="logo-hex">
-        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#f0a500"/>
-              <stop offset="100%" stop-color="#00d4ff"/>
-            </linearGradient>
-          </defs>
-          <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="url(#hg)" stroke-width="1.5"/>
-          <polygon points="20,8 30,14 30,26 20,32 10,26 10,14" fill="url(#hg)" opacity="0.15"/>
-          <text x="20" y="24" text-anchor="middle" font-family="Orbitron" font-size="10" font-weight="900" fill="url(#hg)">M</text>
+        <svg viewBox="0 0 40 46" fill="none">
+          <path d="M20 1L38 11.5V34.5L20 45L2 34.5V11.5L20 1Z" stroke="url(#lg1)" stroke-width="1.5" fill="rgba(240,165,0,0.06)"/>
+          <path d="M20 8L32 15V29L20 36L8 29V15L20 8Z" fill="rgba(240,165,0,0.1)" stroke="url(#lg1)" stroke-width="1"/>
+          <text x="20" y="26" text-anchor="middle" font-family="Orbitron" font-size="10" font-weight="700" fill="url(#lg1)">AI</text>
+          <defs><linearGradient id="lg1" x1="0" y1="0" x2="40" y2="46"><stop offset="0%" stop-color="#f0a500"/><stop offset="100%" stop-color="#ffc947"/></linearGradient></defs>
         </svg>
       </div>
       <div class="logo-text-wrap">
-        <span class="logo-name">منصة المهندس</span>
-        <span class="logo-sub">لتحليل التداول الذكي v3</span>
+        <div class="logo-name">AL-MOHANDIS</div>
+        <div class="logo-sub">محلل التداول الذكي</div>
       </div>
     </div>
     <div class="coin-input-zone">
-      <span class="coin-input-label">الزوج:</span>
-      <input type="text" id="coinInput" class="coin-input" placeholder="BTC" maxlength="10" data-tt="coinInput"/>
+      <span class="coin-input-label">عملة:</span>
+      <input id="coinInput" class="coin-input" type="text" placeholder="BTC" maxlength="12" autocomplete="off" spellcheck="false" data-tt="coinInput">
       <span class="sep-text">/</span>
       <select id="quoteSelect" class="quote-select" data-tt="quoteSelect">
         <option value="USDT">USDT</option>
         <option value="USDC">USDC</option>
         <option value="BTC">BTC</option>
         <option value="ETH">ETH</option>
-        <option value="BNB">BNB</option>
       </select>
       <select id="tfSelect" class="tf-select" data-tt="tfSelect">
-        <option value="1m">1 دقيقة</option>
-        <option value="3m">3 دقائق</option>
-        <option value="5m" selected>5 دقائق</option>
-        <option value="15m">15 دقيقة</option>
-        <option value="30m">30 دقيقة</option>
-        <option value="1h">1 ساعة</option>
-        <option value="4h">4 ساعات</option>
+        <option value="1m">1د</option>
+        <option value="3m">3د</option>
+        <option value="5m" selected>5د</option>
+        <option value="15m">15د</option>
+        <option value="30m">30د</option>
+        <option value="1h">1س</option>
+        <option value="4h">4س</option>
         <option value="1d">يومي</option>
         <option value="1w">أسبوعي</option>
       </select>
-      <button class="launch-btn" id="launchBtn" onclick="startSystem()" data-tt="launchBtn">▶ ابدأ</button>
-      <button class="ai-btn" id="aiBtn" onclick="askAI()" disabled data-tt="aiBtn">⬡ ذكاء اصطناعي</button>
+      <button id="launchBtn" class="launch-btn" onclick="startSystem()" data-tt="launchBtn">▶ ابدأ</button>
     </div>
-    <div class="topbar-status" data-tt="connStatus">
-      <div class="live-dot" id="liveDot"></div>
-      <span id="connLabel" style="font-family:var(--font-ar);font-size:12px;color:var(--text3);font-weight:600;">غير متصل</span>
-      <span id="live-clock"></span>
+    <div class="topbar-status">
+      <button id="aiBtn" class="ai-btn-top" onclick="askAI()" disabled data-tt="aiBtn">⬡ AI</button>
+      <div class="live-dot" id="liveDot" data-tt="connStatus"></div>
+      <span id="connLabel" style="font-family:var(--font-ar);font-size:10px;color:var(--text3);" class="desktop-only">غير متصل</span>
+      <span id="live-clock" data-tt="liveClock">--:--:--</span>
     </div>
-  </header>
+  </div>
 
-  <div class="main-body">
-    <!-- LEFT PANEL -->
-    <aside class="left-panel">
-      <div class="panel-header">
-        <div class="panel-header-dot"></div>بيانات السوق
-      </div>
+  <div class="main-content">
+
+    <div class="left-panel">
+      <div class="panel-header"><div class="panel-header-dot"></div>بيانات السوق</div>
       <div class="market-cards">
-        <div class="mcard" data-tt="high24"><span class="mcard-label">أعلى 24 ساعة</span><span class="mcard-val" id="m-high">—</span></div>
-        <div class="mcard" data-tt="low24"><span class="mcard-label">أدنى 24 ساعة</span><span class="mcard-val" id="m-low">—</span></div>
-        <div class="mcard" data-tt="volume"><span class="mcard-label">حجم التداول</span><span class="mcard-val" id="m-vol" style="color:var(--gold)">—</span></div>
-        <div class="mcard" data-tt="open24"><span class="mcard-label">سعر الافتتاح</span><span class="mcard-val" id="m-open">—</span></div>
+        <div class="mcard" data-tt="high24"><span class="mcard-label">أعلى 24س</span><span class="mcard-val" id="m-high">—</span></div>
+        <div class="mcard" data-tt="low24"><span class="mcard-label">أدنى 24س</span><span class="mcard-val" id="m-low">—</span></div>
+        <div class="mcard" data-tt="volume"><span class="mcard-label">الحجم 24س</span><span class="mcard-val" id="m-vol">—</span></div>
+        <div class="mcard" data-tt="open24"><span class="mcard-label">الافتتاح</span><span class="mcard-val" id="m-open">—</span></div>
       </div>
       <div class="indicators-section">
-        <div class="panel-header" style="padding:0 0 8px;border:none;">
-          <div class="panel-header-dot" style="background:var(--cyan-g)"></div>المؤشرات الفنية
-        </div>
-        <div class="ind-item" id="ind-rsi-wrap" data-tt="rsi"><span class="ind-label">RSI (14)</span><span class="ind-val" id="ind-rsi">—</span></div>
-        <div class="ind-item" id="ind-ma20-wrap" data-tt="ma20"><span class="ind-label">المتوسط 20</span><span class="ind-val" id="ind-ma20">—</span></div>
-        <div class="ind-item" id="ind-ma50-wrap" data-tt="ma50"><span class="ind-label">المتوسط 50</span><span class="ind-val" id="ind-ma50">—</span></div>
-        <div class="ind-item" id="ind-ma200-wrap" data-tt="ma200"><span class="ind-label">المتوسط 200</span><span class="ind-val" id="ind-ma200">—</span></div>
-        <div class="ind-item" id="ind-macd-wrap" data-tt="macd"><span class="ind-label">MACD هيستوغرام</span><span class="ind-val" id="ind-macd">—</span></div>
-        <div class="ind-item" id="ind-atr-wrap" data-tt="atr"><span class="ind-label">ATR (14)</span><span class="ind-val" id="ind-atr">—</span></div>
-        <div class="ind-item" id="ind-bb-wrap" data-tt="bb"><span class="ind-label">بولينجر BB%</span><span class="ind-val" id="ind-bb">—</span></div>
-        <div class="ind-item" id="ind-stoch-wrap" data-tt="stoch"><span class="ind-label">ستوكاستيك %K</span><span class="ind-val" id="ind-stoch">—</span></div>
-        <div class="ind-item" id="ind-vol-wrap" data-tt="volratio"><span class="ind-label">نسبة الحجم</span><span class="ind-val" id="ind-vol">—</span></div>
+        <div class="panel-header" style="padding:6px 10px;margin-bottom:4px;border-bottom:none;"><div class="panel-header-dot"></div>المؤشرات الفنية</div>
+        <div class="ind-item" data-tt="rsi"><span class="ind-label">RSI (14)</span><span class="ind-val" id="ind-rsi">—</span></div>
+        <div class="ind-item" data-tt="ma20"><span class="ind-label">MA 20</span><span class="ind-val" id="ind-ma20">—</span></div>
+        <div class="ind-item" data-tt="ma50"><span class="ind-label">MA 50</span><span class="ind-val" id="ind-ma50">—</span></div>
+        <div class="ind-item" data-tt="ma200"><span class="ind-label">MA 200</span><span class="ind-val" id="ind-ma200">—</span></div>
+        <div class="ind-item" data-tt="macd"><span class="ind-label">MACD Hist</span><span class="ind-val" id="ind-macd">—</span></div>
+        <div class="ind-item" data-tt="atr"><span class="ind-label">ATR (14)</span><span class="ind-val" id="ind-atr">—</span></div>
+        <div class="ind-item" data-tt="bb"><span class="ind-label">BB %B</span><span class="ind-val" id="ind-bb">—</span></div>
+        <div class="ind-item" data-tt="stoch"><span class="ind-label">Stoch (14)</span><span class="ind-val" id="ind-stoch">—</span></div>
+        <div class="ind-item" data-tt="volratio"><span class="ind-label">حجم نسبي</span><span class="ind-val" id="ind-vol">—</span></div>
       </div>
-    </aside>
+    </div>
 
-    <!-- CENTER CHART -->
-    <main class="chart-zone">
+    <div class="chart-zone">
       <div class="chart-topbar">
         <span class="chart-pair-name" id="hdr-pair" data-tt="pairName">— / —</span>
         <span id="chart-price" data-tt="price">—</span>
         <span id="chart-chg" class="chg-pos" data-tt="change">—</span>
-        <div style="flex:1"></div>
-        <span style="font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:600;" data-tt="okxSource">بيانات OKX مباشر</span>
+        <span style="font-family:var(--font-ar);font-size:10px;color:var(--text3);margin-right:auto;" data-tt="okxSource">OKX</span>
+        <span id="candle-count" style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">0 شمعة</span>
+        <span id="bottom-status" style="font-family:var(--font-ar);font-size:10px;color:var(--text3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" class="desktop-only">جاهز</span>
       </div>
       <div class="chart-wrap">
         <div id="chart-container"></div>
         <div class="chart-overlay" id="chartOverlay">
-          <div class="overlay-icon">📡</div>
-          <div class="overlay-title">في انتظار الإشارة</div>
-          <div class="overlay-sub">اكتب رمز العملة (مثل BTC)<br>اختار الإطار الزمني<br>واضغط "ابدأ"</div>
+          <div class="overlay-icon">⬡</div>
+          <div class="overlay-title">محلل التداول الذكي</div>
+          <div class="overlay-sub">اكتب رمز العملة واضغط ابدأ<br>BTC · ETH · SOL · DOGE · XRP</div>
           <div class="load-progress-wrap" id="loadProgressWrap">
-            <div class="load-progress-label" id="loadLabel">جاري تحميل البيانات...</div>
+            <div class="load-progress-label" id="loadLabel">جاري التحميل...</div>
             <div class="load-progress-bar"><div class="load-progress-fill" id="loadFill"></div></div>
           </div>
         </div>
       </div>
       <div class="mini-bar">
-        <div class="mini-chip" data-tt="rsi"><span class="mc-lbl">RSI</span><span class="mc-val" id="mc-rsi">—</span></div>
-        <div class="mini-chip" data-tt="ma20"><span class="mc-lbl">MA20</span><span class="mc-val" id="mc-ma20">—</span></div>
-        <div class="mini-chip" data-tt="ma50"><span class="mc-lbl">MA50</span><span class="mc-val" id="mc-ma50">—</span></div>
-        <div class="mini-chip" data-tt="macd"><span class="mc-lbl">MACD</span><span class="mc-val" id="mc-macd">—</span></div>
-        <div class="mini-chip" data-tt="atr"><span class="mc-lbl">ATR</span><span class="mc-val" id="mc-atr">—</span></div>
-        <div class="mini-chip" data-tt="bb"><span class="mc-lbl">BB%</span><span class="mc-val" id="mc-bb">—</span></div>
-        <div class="mini-chip" data-tt="trend"><span class="mc-lbl">الاتجاه</span><span class="mc-val" id="mc-trend">—</span></div>
+        <div class="mini-chip" data-tt="rsi"><span class="mc-lbl">RSI:</span><span class="mc-val" id="mc-rsi">—</span></div>
+        <div class="mini-chip" data-tt="ma20"><span class="mc-lbl">MA20:</span><span class="mc-val" id="mc-ma20">—</span></div>
+        <div class="mini-chip" data-tt="ma50"><span class="mc-lbl">MA50:</span><span class="mc-val" id="mc-ma50">—</span></div>
+        <div class="mini-chip" data-tt="macd"><span class="mc-lbl">MACD:</span><span class="mc-val" id="mc-macd">—</span></div>
+        <div class="mini-chip" data-tt="atr"><span class="mc-lbl">ATR:</span><span class="mc-val" id="mc-atr">—</span></div>
+        <div class="mini-chip" data-tt="bb"><span class="mc-lbl">BB%:</span><span class="mc-val" id="mc-bb">—</span></div>
+        <div class="mini-chip" data-tt="trend"><span class="mc-lbl">اتجاه:</span><span class="mc-val" id="mc-trend">—</span></div>
       </div>
-    </main>
+    </div>
 
-    <!-- RIGHT PANEL -->
-    <aside class="right-panel">
+    <div class="right-panel">
       <div class="r-tabs">
-        <button class="r-tab" onclick="rTab(this,'portfolio')" data-tt="tabPortfolio">💼 محفظتي</button>
-        <button class="r-tab active" onclick="rTab(this,'signal')" data-tt="tabSignal">الإشارة</button>
-        <button class="r-tab" onclick="rTab(this,'levels')" data-tt="tabLevels">المستويات</button>
-        <button class="r-tab" onclick="rTab(this,'ai')" data-tt="tabAI">الذكاء الاصطناعي</button>
+        <button class="r-tab active" onclick="renderDesktopPanel('signal')" data-tt="tabSignal">🚦 الإشارة</button>
+        <button class="r-tab" onclick="renderDesktopPanel('levels')" data-tt="tabLevels">📏 المستويات</button>
+        <button class="r-tab" onclick="renderDesktopPanel('ai')" data-tt="tabAI">⬡ AI</button>
+        <button class="r-tab" onclick="renderDesktopPanel('portfolio')" data-tt="tabPortfolio">💼 المحفظة</button>
       </div>
       <div class="r-body">
-
-        <!-- ══ PORTFOLIO TAB ══ -->
-        <div id="rtab-portfolio" style="display:none;">
-          <div class="trade-mode-toggle">
-            <button class="trade-mode-btn active-no" id="btn-no-trade" onclick="setTradeMode('none')" data-tt="btnNoTrade">🚫 مش مشتري</button>
-            <button class="trade-mode-btn" id="btn-has-trade" onclick="setTradeMode('buy')" data-tt="btnHasTrade">✅ مشتري</button>
+        <div id="rtab-signal">
+          <div class="sig-card wait" id="sigCard">
+            <div class="sig-main" id="sigMain">⏸️ انتظار</div>
+            <div class="sig-reason" id="sigReason">شغّل النظام لعرض الإشارة</div>
           </div>
-          <div id="panel-no-trade">
-            <div class="port-section-title">توصية الدخول</div>
-            <div id="entry-analysis">
-              <div class="no-trade-panel">
-                <div class="no-trade-icon">🔍</div>
-                <div class="no-trade-title">في انتظار البيانات</div>
-                <div class="no-trade-sub">شغّل النظام الأول وبعدين<br>هيقولك أحسن نقطة دخول</div>
-              </div>
-            </div>
+          <div class="score-grid">
+            <div class="sg-item" data-tt="rsi"><div class="sg-lbl">النتيجة</div><div class="sg-val" id="ag-score">—</div></div>
+            <div class="sg-item" data-tt="trend"><div class="sg-lbl">الاتجاه</div><div class="sg-val" id="ag-trend">—</div></div>
+            <div class="sg-item" data-tt="macd"><div class="sg-lbl">الزخم</div><div class="sg-val" id="ag-mom">—</div></div>
+            <div class="sg-item" data-tt="volratio"><div class="sg-lbl">الحجم</div><div class="sg-val" id="ag-vol">—</div></div>
           </div>
-          <div id="panel-has-trade" style="display:none;">
-            <div class="port-section-title">بيانات الصفقة</div>
+          <div class="rsi-section" data-tt="rsi">
+            <div class="rsi-header" id="rsi-display">RSI —</div>
+            <div class="rsi-bar-track"><div class="rsi-bar-fill" id="rsiFill" style="width:50%"></div></div>
+            <div class="rsi-labels"><span>0</span><span style="color:var(--green)">30</span><span style="color:var(--red)">70</span><span>100</span></div>
+          </div>
+          <div class="mkt-summary-card" data-tt="marketSummary">
+            <div class="mkt-sum-title">📋 ملخص السوق</div>
+            <div class="mkt-sum-body" id="mktSummary">شغّل النظام لعرض الملخص</div>
+          </div>
+          <div class="tip-card" id="tipCard" style="display:none" data-tt="tipCard">
+            <div class="tip-icon">💡</div>
+            <div class="tip-text" id="tipText"></div>
+          </div>
+        </div>
+        <div id="rtab-levels" style="display:none">
+          <div class="levels-section">
+            <div class="levels-title levels-r-title">🔴 مستويات المقاومة</div>
+            <div id="resistList"></div>
+          </div>
+          <div class="levels-section">
+            <div class="levels-title levels-s-title">🟢 مستويات الدعم</div>
+            <div id="suppList"></div>
+          </div>
+          <div class="rr-card" data-tt="rr">
+            <div class="rr-title">⚖️ نسبة المخاطرة / العائد</div>
+            <div class="rr-val" id="rrVal">—</div>
+            <div class="rr-detail" id="rrDetail">شغّل النظام أولاً</div>
+          </div>
+        </div>
+        <div id="rtab-ai" style="display:none;flex-direction:column;gap:10px;">
+          <div class="ai-engine-row" id="aiEngineRow" data-tt="aiEngines"></div>
+          <div class="ai-progress" id="aiProgress" style="display:none"><div class="ai-progress-fill" id="aiProgressFill"></div></div>
+          <div class="ai-thinking-bar" id="aiBar"></div>
+          <div class="ai-thinking-msg" id="aiMsg"></div>
+          <div class="ai-src-badge-wrap"><span class="ai-src-badge" id="ai-src-badge" data-tt="aiBadge">⬡ جاهز</span></div>
+          <div class="ai-output" id="aiOut"><span class="ai-placeholder">شغّل النظام الأول وبعدين اضغط تحليل الذكاء الاصطناعي</span></div>
+          <button onclick="askAI()" style="padding:11px;background:linear-gradient(135deg,var(--purple),#2563eb);border:none;border-radius:10px;color:white;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;">⬡ تحليل الذكاء الاصطناعي</button>
+        </div>
+        <div id="rtab-portfolio" style="display:none">
+          <div class="trade-mode-btns">
+            <button id="btn-no-trade" class="trade-mode-btn active-no" onclick="setTradeMode('none')" data-tt="btnNoTrade">🔍 مش مشتري</button>
+            <button id="btn-has-trade" class="trade-mode-btn" onclick="setTradeMode('buy')" data-tt="btnHasTrade">💼 عندي صفقة</button>
+          </div>
+          <div id="panel-no-trade"><div id="entry-analysis"></div></div>
+          <div id="panel-has-trade" style="display:none">
             <div id="no-trade-registered">
-              <div style="text-align:center;padding:16px 0;">
-                <div style="font-size:32px;margin-bottom:8px;">📋</div>
-                <div style="font-family:var(--font-ar);font-size:13px;font-weight:700;color:var(--text2);margin-bottom:6px;">سجّل صفقتك</div>
-                <div style="font-family:var(--font-ar);font-size:11px;color:var(--text3);line-height:1.8;margin-bottom:12px;">اكتب سعر الشراء والكمية<br>وهنقولك بيع امتى</div>
-                <button onclick="openModal()" data-tt="registerTradeBtn" style="padding:10px 20px;background:var(--gold-g);border:none;border-radius:7px;color:#000;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;">📥 سجّل صفقة</button>
+              <div style="text-align:center;padding:20px 10px;">
+                <div style="font-size:32px;margin-bottom:8px;">📥</div>
+                <div style="font-family:var(--font-ar);font-size:13px;color:var(--text2);margin-bottom:12px;">سجّل تفاصيل صفقتك</div>
+                <button onclick="openModal()" class="launch-btn" style="width:100%;padding:10px;" data-tt="registerTradeBtn">📥 سجّل صفقة جديدة</button>
               </div>
             </div>
-            <div id="trade-card-wrap" style="display:none;">
+            <div id="trade-card-wrap" style="display:none">
               <div class="port-card" id="main-port-card">
-                <div class="port-card-header">
-                  <span class="port-coin-name" id="pc-coin">—</span>
-                  <span class="port-pnl-badge pnl-pos" id="pc-pnl" data-tt="pnlBadge">—</span>
+                <div class="pc-header">
+                  <div class="pc-coin-wrap"><span class="pc-coin" id="pc-coin">—</span><span class="port-pnl-badge pnl-pos" id="pc-pnl">—</span></div>
+                  <button class="pc-delete" onclick="deleteTrade()">🗑️</button>
                 </div>
-                <div class="port-grid">
-                  <div class="port-cell" data-tt="buyPriceCell">
-                    <div class="port-cell-lbl">سعر الشراء</div>
-                    <div class="port-cell-val" id="pc-buy-price">—</div>
-                  </div>
-                  <div class="port-cell" data-tt="currentPriceCell">
-                    <div class="port-cell-lbl">السعر الحالي</div>
-                    <div class="port-cell-val" id="pc-current">—</div>
-                  </div>
-                  <div class="port-cell" data-tt="qtyCell">
-                    <div class="port-cell-lbl">الكمية</div>
-                    <div class="port-cell-val" id="pc-qty">—</div>
-                  </div>
-                  <div class="port-cell" data-tt="pnlUsdCell">
-                    <div class="port-cell-lbl">الربح / الخسارة</div>
-                    <div class="port-cell-val" id="pc-pnl-usd">—</div>
-                  </div>
+                <div class="pc-stats">
+                  <div class="pc-stat" data-tt="buyPriceCell"><span class="pc-stat-lbl">سعر الشراء</span><span class="pc-stat-val" id="pc-buy-price">—</span></div>
+                  <div class="pc-stat" data-tt="currentPriceCell"><span class="pc-stat-lbl">السعر الحالي</span><span class="pc-stat-val" id="pc-current">—</span></div>
+                  <div class="pc-stat" data-tt="qtyCell"><span class="pc-stat-lbl">الكمية</span><span class="pc-stat-val" id="pc-qty">—</span></div>
+                  <div class="pc-stat" data-tt="pnlUsdCell"><span class="pc-stat-lbl">ربح/خسارة $</span><span class="pc-stat-val" id="pc-pnl-usd">—</span></div>
                 </div>
-                <div class="progress-section" data-tt="progressBar">
-                  <div class="progress-label">
-                    <span>وقف الخسارة</span>
-                    <span>الهدف الأول</span>
-                  </div>
-                  <div class="progress-track" id="pnl-track">
-                    <div class="progress-fill" id="pnl-fill" style="width:50%;background:var(--cyan)"></div>
-                    <div class="progress-marker" id="entry-marker"></div>
-                  </div>
+                <div class="pnl-progress" data-tt="progressBar">
+                  <div class="pnl-labels"><span style="color:var(--red)">SL</span><span style="color:var(--text3);font-size:9px">← تقدم الصفقة →</span><span style="color:var(--green)">TP1</span></div>
+                  <div class="pnl-track"><div class="pnl-fill" id="pnl-fill"></div><div class="entry-marker" id="entry-marker"></div></div>
                 </div>
                 <div class="targets-row" id="targets-row"></div>
-                <button class="del-trade-btn" onclick="deleteTrade()" data-tt="delTradeBtn">🗑️ حذف الصفقة</button>
+                <div id="trade-recommendation-wrap"></div>
+                <button onclick="openModal()" class="launch-btn" style="width:100%;margin-top:10px;padding:8px;font-size:12px;background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid var(--cyan);">✏️ تعديل الصفقة</button>
               </div>
-              <div id="trade-recommendation-wrap"></div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- SIGNAL TAB -->
-        <div id="rtab-signal">
-          <div class="sig-card wait" id="sigCard" data-tt="signal">
-            <div class="sig-glow"></div>
-            <div class="sig-label">إشارة التداول</div>
-            <div class="sig-main" id="sigMain">انتظار...</div>
-            <div class="sig-reason" id="sigReason">في انتظار البيانات...</div>
-          </div>
-          <div class="agrid">
-            <div class="agrid-cell" data-tt="score"><div class="agrid-lbl">النتيجة</div><div class="agrid-val" id="ag-score" style="color:var(--text3)">—</div></div>
-            <div class="agrid-cell" data-tt="trend"><div class="agrid-lbl">الاتجاه</div><div class="agrid-val" id="ag-trend" style="color:var(--text3)">—</div></div>
-            <div class="agrid-cell" data-tt="macd"><div class="agrid-lbl">الزخم</div><div class="agrid-val" id="ag-mom" style="color:var(--text3)">—</div></div>
-            <div class="agrid-cell" data-tt="volratio"><div class="agrid-lbl">التذبذب</div><div class="agrid-val" id="ag-vol" style="color:var(--text3)">—</div></div>
-          </div>
-          <div class="rsi-wrap" data-tt="rsi">
-            <div class="rsi-header">
-              <span>بيع ←</span>
-              <span id="rsi-display" style="color:var(--text);font-family:var(--font-mono)">RSI —</span>
-              <span>→ شراء</span>
-            </div>
-            <div class="rsi-track">
-              <div class="rsi-zones"></div>
-              <div class="rsi-fill" id="rsiFill" style="width:50%;background:var(--cyan)"></div>
-            </div>
-          </div>
-          <div class="sig-card" id="summaryCard" style="border-color:var(--border)" data-tt="marketSummary">
-            <div class="sig-label">ملخص السوق</div>
-            <div id="mktSummary" style="font-family:var(--font-ar);font-size:12px;line-height:2;color:var(--text2);">اكتب اسم العملة واضغط "ابدأ"</div>
-          </div>
-          <div class="tip-card" id="tipCard" style="display:none;" data-tt="tipCard">
-            <div class="tip-label">💡 نصيحة</div>
-            <div class="tip-text" id="tipText">—</div>
-          </div>
-        </div>
+    <div class="mobile-view" id="mobileView" style="display:none">
+      <div class="mobile-panel active" id="mp-signal"></div>
+      <div class="mobile-panel" id="mp-indicators"></div>
+      <div class="mobile-panel" id="mp-portfolio"></div>
+      <div class="mobile-panel" id="mp-ai"></div>
+    </div>
 
-        <!-- LEVELS TAB -->
-        <div id="rtab-levels" style="display:none;">
-          <div style="font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:700;margin-bottom:8px;">مستويات المقاومة</div>
-          <div id="resistList"></div>
-          <div style="font-family:var(--font-ar);font-size:11px;color:var(--text3);font-weight:700;margin:12px 0 8px;">مستويات الدعم</div>
-          <div id="suppList"></div>
-          <div class="rr-card" data-tt="rr">
-            <div class="rr-label">المخاطرة : العائد</div>
-            <div class="rr-val" id="rrVal">—</div>
-            <div style="font-family:var(--font-ar);font-size:11px;color:var(--text3);margin-top:5px;" id="rrDetail">—</div>
-          </div>
-        </div>
-
-        <!-- AI TAB -->
-        <div id="rtab-ai" style="display:none;" class="ai-panel">
-          <div class="ai-status-bar">
-            <span class="ai-badge" data-tt="aiBadge">🤖 ذكاء اصطناعي</span>
-            <span class="ai-source-badge" id="ai-src-badge">جاهز</span>
-          </div>
-          <div class="ai-engine-row" id="aiEngineRow"></div>
-          <div class="ai-progress" id="aiProgress"><div class="ai-progress-fill" id="aiProgressFill"></div></div>
-          <div class="ai-thinking-bar" id="aiBar"></div>
-          <div class="ai-thinking-msg" id="aiMsg">⚡ بيحلل <span class="dots"></span></div>
-          <div class="ai-output" id="aiOut">
-            <span class="ai-placeholder">شغّل النظام الأول وبعدين اضغط "تحليل الذكاء الاصطناعي".</span>
-          </div>
-        </div>
-
-      </div><!-- /r-body -->
-    </aside>
   </div>
 
-  <footer class="bottom-bar">
-    <span id="bottom-status" data-tt="bottomStatus">⬡ منصة المهندس v3 — جاهزة</span>
-    <span id="candle-count" data-tt="candleCount">0 شمعة</span>
-    <div class="footer-credit">
-      <span class="footer-credit-text">برمجة وتطوير <span>المهندس محمد حماد</span></span>
-      <a class="fb-link" href="https://www.facebook.com/en.mohamed.nasr" target="_blank" title="المهندس محمد حماد" data-tt="fbLink">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
-        </svg>
-      </a>
-    </div>
-  </footer>
+  <div class="bottom-nav">
+    <button class="bnav-btn active" id="bnav-chart-view" onclick="mobileNav('chart-view')"><span class="bnav-icon">📈</span><span class="bnav-label">الرسم</span></button>
+    <button class="bnav-btn" id="bnav-signal" onclick="mobileNav('signal')"><span class="bnav-icon">🚦</span><span class="bnav-label">الإشارة</span></button>
+    <button class="bnav-btn" id="bnav-indicators" onclick="mobileNav('indicators')"><span class="bnav-icon">📊</span><span class="bnav-label">المؤشرات</span></button>
+    <button class="bnav-btn" id="bnav-portfolio" onclick="mobileNav('portfolio')"><span class="bnav-icon">💼</span><span class="bnav-label">المحفظة</span></button>
+    <button class="bnav-btn" id="bnav-ai" onclick="mobileNav('ai')"><span class="bnav-icon">⬡</span><span class="bnav-label">AI</span></button>
+  </div>
+
 </div>
-<div class="toast" id="toast"></div>
 
 <script>
+
 // ══════════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════════
@@ -2131,6 +2158,20 @@ function updateUI(){
   if(tradeMode==='none'&&ta.price) renderEntryAnalysis();
 }
 
+
+
+function calcModalTotal(){
+  const bp=parseFloat(document.getElementById('modal-buy-price').value)||0;
+  const qty=parseFloat(document.getElementById('modal-qty').value)||0;
+  if(bp&&qty) document.getElementById('modal-total').value=(bp*qty).toFixed(4);
+  const curEl=document.getElementById('modal-cur-price');
+  if(curEl&&ta.price) curEl.textContent=fmtP(ta.price);
+}
+function calcModalQty(){
+  const bp=parseFloat(document.getElementById('modal-buy-price').value)||0;
+  const total=parseFloat(document.getElementById('modal-total').value)||0;
+  if(bp&&total) document.getElementById('modal-qty').value=(total/bp).toFixed(8);
+}
 </script>
 </body>
 </html>
