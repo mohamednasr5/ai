@@ -1,6 +1,7 @@
-const CACHE = 'almohandis-v3';
+const CACHE = 'almohandis-v4';
 const ASSETS = [
-  'https://mohamednasr5.github.io/ai/', '/manifest.json',
+  'https://mohamednasr5.github.io/ai/',
+  '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap',
   'https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js'
 ];
