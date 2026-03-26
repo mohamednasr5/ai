@@ -1,8 +1,8 @@
 const CACHE = 'almohandis-v4';
 const ASSETS = [
-  'https://mohamednasr5.github.io/ai/',
-  '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap',
+  './',
+  './manifest.json',
+  'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap',
   'https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js'
 ];
 
@@ -24,7 +24,12 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  if (e.request.url.includes('okx.com') || e.request.url.includes('generativelanguage')) return;
+  if (e.request.url.includes('okx.com') ||
+      e.request.url.includes('generativelanguage') ||
+      e.request.url.includes('pollinations') ||
+      e.request.url.includes('allorigins') ||
+      e.request.url.includes('corsproxy') ||
+      e.request.url.includes('openrouter')) return;
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -34,7 +39,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      }).catch(() => caches.match('/index.html'));
+      }).catch(() => caches.match('./index.html'));
     })
   );
 });
