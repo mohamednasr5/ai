@@ -2,7 +2,7 @@
   "name": "المهندس — محلل التداول الذكي",
   "short_name": "المهندس",
   "description": "محلل التداول الذكي للعملات الرقمية",
-  "start_url": "https://mohamednasr5.github.io/ai/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#080910",
   "theme_color": "#080910",
