@@ -397,6 +397,43 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 @media(max-width:768px){.desktop-only{display:none!important;}}
 @media(min-width:769px){.mobile-only{display:none!important;}}
 </style>
+
+<style>
+/* ══ MOBILE EXTRA CSS ══ */
+.entry-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.entry-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.entry-row:last-of-type{border-bottom:none;}
+.entry-row-lbl{font-family:var(--font-ar);font-size:11px;color:var(--text3);}
+.entry-row-val{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);}
+.entry-status{padding:8px 14px;border-radius:8px;font-family:var(--font-ar);font-size:12px;font-weight:700;text-align:center;}
+.est-buy{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.3);}
+.est-wait{background:rgba(240,165,0,0.1);color:var(--gold);border:1px solid rgba(240,165,0,0.3);}
+.est-sell{background:rgba(255,61,87,0.1);color:var(--red);border:1px solid rgba(255,61,87,0.3);}
+.m-ai-header{text-align:center;margin-bottom:14px;}
+.m-ai-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--gold);margin-bottom:4px;}
+.m-ai-sub{font-family:var(--font-ar);font-size:11px;color:var(--text3);}
+.ai-src-badge-wrap{text-align:center;margin-bottom:8px;}
+.ai-src-badge{padding:4px 12px;background:rgba(124,77,255,0.1);border:1px solid rgba(124,77,255,0.2);border-radius:20px;font-family:var(--font-mono);font-size:10px;color:#aa88ff;}
+
+/* Mobile layout */
+@media(max-width:768px){
+  .main-content{display:block!important;padding-bottom:calc(var(--bottomnav-h) + var(--safe-bottom));}
+  .left-panel,.right-panel{display:none!important;}
+  .chart-zone{height:calc(100vh - var(--topbar-h) - var(--bottomnav-h) - 32px - var(--safe-bottom));display:flex!important;}
+  .mobile-view{position:absolute;top:var(--topbar-h);left:0;right:0;bottom:calc(var(--bottomnav-h) + var(--safe-bottom));display:none;flex-direction:column;overflow:hidden;background:var(--deep);}
+  .mobile-panel{flex:1;overflow-y:auto;padding:14px;display:none;-webkit-overflow-scrolling:touch;}
+  .mobile-panel.active{display:block;}
+  .bottom-nav{display:flex!important;}
+}
+@media(min-width:769px){
+  .main-content{display:grid!important;grid-template-columns:250px 1fr 340px;}
+  .left-panel{display:flex!important;}
+  .right-panel{display:flex!important;}
+  .mobile-view,.bottom-nav{display:none!important;}
+  .chart-zone{display:flex!important;}
+}
+</style>
+
 </head>
 <body>
 
@@ -2172,6 +2209,301 @@ function calcModalQty(){
   const total=parseFloat(document.getElementById('modal-total').value)||0;
   if(bp&&total) document.getElementById('modal-qty').value=(total/bp).toFixed(8);
 }
+
+// ══════════════════════════════════════════════════════════
+//  MOBILE DETECTION & NAV
+// ══════════════════════════════════════════════════════════
+function isMobile(){return window.innerWidth<=768;}
+
+function mobileNav(view){
+  const chartZone=document.querySelector('.chart-zone');
+  const mobileView=document.getElementById('mobileView');
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  if(view==='chart-view'){
+    if(chartZone) chartZone.style.display='flex';
+    if(mobileView) mobileView.style.display='none';
+    const btn=document.getElementById('bnav-chart-view');
+    if(btn) btn.classList.add('active');
+  } else {
+    if(chartZone) chartZone.style.display='none';
+    if(mobileView) mobileView.style.display='flex';
+    document.querySelectorAll('.mobile-panel').forEach(p=>p.classList.remove('active'));
+    const target=document.getElementById('mp-'+view);
+    if(target) target.classList.add('active');
+    const btn=document.getElementById('bnav-'+view);
+    if(btn) btn.classList.add('active');
+    if(view==='signal') renderMobileSignal();
+    if(view==='indicators') renderMobileIndicators();
+    if(view==='portfolio') renderMobilePortfolio();
+    if(view==='ai') renderMobileAI();
+  }
+}
+
+// ══ MOBILE SIGNAL PANEL ══
+function renderMobileSignal(){
+  const el=document.getElementById('mp-signal');if(!el)return;
+  if(!ta.price){el.innerHTML='<div class="m-empty-state">📡 شغّل النظام الأول</div>';return;}
+  const score=ta.score||0;
+  const sigClass=score>=3?'buy':score<=-2?'sell':'wait';
+  const sigColor=score>=3?'var(--green)':score<=-2?'var(--red)':'var(--gold)';
+  let reasons=[];
+  if(ta.rsi){if(ta.rsi<35)reasons.push('RSI '+ta.rsi.toFixed(0)+' — ذروة بيع 💚');else if(ta.rsi>70)reasons.push('RSI '+ta.rsi.toFixed(0)+' — ذروة شراء ⚠️');else reasons.push('RSI '+ta.rsi.toFixed(0)+' — طبيعي');}
+  if(ta.macd) reasons.push('MACD '+(ta.macd.hist>0?'إيجابي 📈':'سلبي 📉'));
+  if(ta.ma20) reasons.push('السعر '+(ta.price>ta.ma20?'فوق ✅':'تحت ❌')+' MA20');
+  if(ta.trend) reasons.push('الاتجاه: '+ta.trend);
+  if(ta.bbPct) reasons.push('BB%: '+ta.bbPct+'%');
+  const s1=ta.levels&&ta.levels.S[0];const r1=ta.levels&&ta.levels.R[0];
+  const sl=s1?fmtP(s1*0.997):null;const tp1=r1?fmtP(r1):null;
+  const riskRaw=s1?(ta.price-s1*0.997):ta.price*0.03;
+  const rewRaw=r1?(r1-ta.price):ta.price*0.05;
+  const rr=riskRaw>0?(rewRaw/riskRaw).toFixed(2):'—';
+  el.innerHTML=`
+    <div class="m-sig-hero sig-${sigClass}">
+      <div class="m-sig-icon">${score>=3?'🟢':score<=-2?'🔴':'🟡'}</div>
+      <div class="m-sig-text">${ta.sig||'—'}</div>
+      <div class="m-sig-score" style="color:${sigColor}">${score>=0?'+':''}${score.toFixed(1)} نقطة</div>
+    </div>
+    <div class="m-rsi-section">
+      <div class="m-rsi-header"><span>RSI</span><span style="color:${ta.rsi>70?'var(--red)':ta.rsi<30?'var(--green)':'var(--text)'}">${ta.rsi?ta.rsi.toFixed(1):'—'}</span></div>
+      <div class="rsi-bar-track"><div class="rsi-bar-fill" style="width:${ta.rsi||0}%;background:${ta.rsi>70?'var(--red)':ta.rsi<30?'var(--green)':'var(--cyan)'}"></div></div>
+      <div class="rsi-labels"><span>0</span><span style="color:var(--green)">30</span><span style="color:var(--red)">70</span><span>100</span></div>
+    </div>
+    <div class="m-reasons-list">${reasons.map(r=>'<div class="m-reason-item">• '+r+'</div>').join('')}</div>
+    <div class="m-levels-mini">
+      <div class="m-level-row"><span class="ml-lbl">🔴 مقاومة</span><span class="ml-val" style="color:var(--red)">${r1?fmtP(r1):'—'}</span><span class="ml-dist">${r1?'+'+((r1-ta.price)/ta.price*100).toFixed(1)+'%':''}</span></div>
+      <div class="m-level-row" style="background:rgba(0,212,255,0.06);border-color:var(--cyan)"><span class="ml-lbl">⚡ الحالي</span><span class="ml-val" style="color:var(--gold)">${fmtP(ta.price)}</span><span class="ml-dist"></span></div>
+      <div class="m-level-row"><span class="ml-lbl">🟢 دعم</span><span class="ml-val" style="color:var(--green)">${s1?fmtP(s1):'—'}</span><span class="ml-dist">${s1?((s1-ta.price)/ta.price*100).toFixed(1)+'%':''}</span></div>
+    </div>
+    <div class="m-rr-card">
+      <div class="m-rr-title">⚖️ نسبة المخاطرة / العائد</div>
+      <div class="m-rr-val" style="color:${parseFloat(rr)>=2?'var(--green)':parseFloat(rr)>=1?'var(--gold)':'var(--red)'}">1 : ${rr}</div>
+      <div class="m-rr-detail">${sl?'وقف: '+sl:''}${tp1?' | هدف: '+tp1:''}</div>
+    </div>
+    ${ta.tip?'<div class="m-tip-card"><span class="m-tip-icon">💡</span><span>'+ta.tip+'</span></div>':''}
+  `;
+}
+
+// ══ MOBILE INDICATORS PANEL ══
+function renderMobileIndicators(){
+  const el=document.getElementById('mp-indicators');if(!el)return;
+  if(!ta.price){el.innerHTML='<div class="m-empty-state">📡 شغّل النظام الأول</div>';return;}
+  const inds=[
+    {lbl:'RSI',val:ta.rsi?ta.rsi.toFixed(1):'—',color:ta.rsi>70?'var(--red)':ta.rsi<30?'var(--green)':'var(--text)',desc:'مؤشر القوة النسبية'},
+    {lbl:'MA 20',val:ta.ma20?fmtP(ta.ma20):'—',color:ta.ma20&&ta.price>ta.ma20?'var(--green)':'var(--red)',desc:'متوسط 20 شمعة'},
+    {lbl:'MA 50',val:ta.ma50?fmtP(ta.ma50):'—',color:ta.ma50&&ta.price>ta.ma50?'var(--green)':'var(--red)',desc:'متوسط 50 شمعة'},
+    {lbl:'MA 200',val:ta.ma200?fmtP(ta.ma200):'—',color:ta.ma200&&ta.price>ta.ma200?'var(--green)':'var(--red)',desc:'متوسط 200 شمعة'},
+    {lbl:'MACD',val:ta.macd?ta.macd.hist.toFixed(6):'—',color:ta.macd&&ta.macd.hist>0?'var(--green)':'var(--red)',desc:'تقاطع المتوسطات'},
+    {lbl:'ATR',val:ta.atr?fmtP(ta.atr):'—',color:'var(--text)',desc:'متوسط المدى الحقيقي'},
+    {lbl:'BB %',val:ta.bbPct?ta.bbPct+'%':'—',color:ta.bbPct&&parseFloat(ta.bbPct)<25?'var(--green)':ta.bbPct&&parseFloat(ta.bbPct)>75?'var(--red)':'var(--text)',desc:'نطاق بولينجر'},
+    {lbl:'Stoch',val:ta.stoch?ta.stoch.toFixed(1):'—',color:ta.stoch>80?'var(--red)':ta.stoch<20?'var(--green)':'var(--text)',desc:'الستوكاستيك'},
+    {lbl:'حجم',val:ta.volR?ta.volR.toFixed(2)+'x':'—',color:ta.volR&&ta.volR>1.5?'var(--gold)':'var(--text)',desc:'نسبة حجم التداول'},
+    {lbl:'الاتجاه',val:ta.trend||'—',color:'var(--text)',desc:'الاتجاه العام للسعر'},
+  ];
+  const hVal=document.getElementById('m-high');
+  const lVal=document.getElementById('m-low');
+  const vVal=document.getElementById('m-vol');
+  const oVal=document.getElementById('m-open');
+  el.innerHTML=`
+    <div class="m-market-strip">
+      <div class="m-mkt-item"><span class="m-mkt-lbl">أعلى 24س</span><span class="m-mkt-val">${hVal?hVal.textContent:'—'}</span></div>
+      <div class="m-mkt-item"><span class="m-mkt-lbl">أدنى 24س</span><span class="m-mkt-val">${lVal?lVal.textContent:'—'}</span></div>
+      <div class="m-mkt-item"><span class="m-mkt-lbl">الحجم</span><span class="m-mkt-val">${vVal?vVal.textContent:'—'}</span></div>
+      <div class="m-mkt-item"><span class="m-mkt-lbl">الافتتاح</span><span class="m-mkt-val">${oVal?oVal.textContent:'—'}</span></div>
+    </div>
+    <div class="m-ind-grid">
+      ${inds.map(i=>`<div class="m-ind-card"><div class="m-ind-lbl">${i.lbl}</div><div class="m-ind-val" style="color:${i.color}">${i.val}</div><div class="m-ind-desc">${i.desc}</div></div>`).join('')}
+    </div>
+  `;
+}
+
+// ══ MOBILE PORTFOLIO PANEL ══
+function renderMobilePortfolio(){
+  const el=document.getElementById('mp-portfolio');if(!el)return;
+  const hasTrade=!!allTrades[currentSymbol];
+  el.innerHTML=`
+    <div class="m-trade-mode-btns">
+      <button class="m-mode-btn ${tradeMode==='none'?'active-no':''}" onclick="tradeMode='none';renderMobilePortfolio();if(ta.price)renderMobileEntryAnalysis();">🔍 أنا مش مشتري</button>
+      <button class="m-mode-btn ${tradeMode==='buy'?'active-buy':''}" onclick="tradeMode='buy';renderMobilePortfolio();if(currentTrade&&ta.price)setTimeout(renderMobileTrade,100);">💼 عندي صفقة</button>
+    </div>
+    <div id="m-panel-no-trade" style="display:${tradeMode==='none'?'block':'none'}">
+      <div id="m-entry-analysis">${!ta.price?'<div class="m-empty-state">📡 شغّل النظام الأول</div>':''}</div>
+    </div>
+    <div id="m-panel-has-trade" style="display:${tradeMode==='buy'?'block':'none'}">
+      <div id="m-no-trade-msg" style="display:${hasTrade?'none':'block'}">
+        <div class="m-no-trade-msg">
+          <div class="m-no-trade-icon">📥</div>
+          <div class="m-no-trade-text">سجّل صفقتك عشان تتابعها</div>
+          <button class="m-reg-btn" onclick="openModal()">📥 سجّل صفقة جديدة</button>
+        </div>
+      </div>
+      <div id="m-trade-card-wrap" style="display:${hasTrade?'block':'none'}">
+        <div class="port-card" id="m-main-port-card">
+          <div class="pc-header">
+            <div class="pc-coin-wrap">
+              <span class="pc-coin" id="m-pc-coin">${currentSymbol}</span>
+              <span class="port-pnl-badge" id="m-pc-pnl">—</span>
+            </div>
+            <button class="pc-delete" onclick="deleteTrade()">🗑️</button>
+          </div>
+          <div class="pc-stats">
+            <div class="pc-stat"><span class="pc-stat-lbl">سعر الشراء</span><span class="pc-stat-val" id="m-pc-buy-price">—</span></div>
+            <div class="pc-stat"><span class="pc-stat-lbl">السعر الحالي</span><span class="pc-stat-val" id="m-pc-current">—</span></div>
+            <div class="pc-stat"><span class="pc-stat-lbl">الكمية</span><span class="pc-stat-val" id="m-pc-qty">—</span></div>
+            <div class="pc-stat"><span class="pc-stat-lbl">ربح/خسارة $</span><span class="pc-stat-val" id="m-pc-pnl-usd">—</span></div>
+          </div>
+          <div class="pnl-progress">
+            <div class="pnl-labels"><span style="color:var(--red)">SL</span><span style="color:var(--text3);font-size:9px">← تقدم الصفقة →</span><span style="color:var(--green)">TP1</span></div>
+            <div class="pnl-track"><div class="pnl-fill" id="m-pnl-fill"></div><div class="entry-marker" id="m-entry-marker"></div></div>
+          </div>
+          <div class="targets-row" id="m-targets-row"></div>
+          <div id="m-trade-recommendation-wrap"></div>
+          <button class="m-reg-btn" onclick="openModal()" style="margin-top:10px;background:rgba(0,212,255,0.1);border:1px solid var(--cyan);color:var(--cyan);">✏️ تعديل الصفقة</button>
+        </div>
+      </div>
+    </div>
+  `;
+  if(tradeMode==='none'&&ta.price) setTimeout(renderMobileEntryAnalysis,50);
+  if(tradeMode==='buy'&&hasTrade&&ta.price) setTimeout(renderMobileTrade,100);
+}
+
+function renderMobileEntryAnalysis(){
+  const wrap=document.getElementById('m-entry-analysis');
+  if(!wrap||!ta.price) return;
+  const cur=ta.price,rsi=ta.rsi||50,score=ta.score||0;
+  const s1=ta.levels&&ta.levels.S[0]?ta.levels.S[0]:null;
+  const r1=ta.levels&&ta.levels.R[0]?ta.levels.R[0]:null;
+  const trend=ta.trend||'—';
+  let idealEntry,entryReason,statusClass,statusText,statusIcon;
+  if(score>=3&&rsi<60){idealEntry=s1?fmtP(s1*1.001):fmtP(cur);entryReason='إشارة شراء قوية — يمكنك الدخول الآن أو عند الدعم الأقرب';statusClass='est-buy';statusIcon='✅';statusText='وقت مناسب للدخول';}
+  else if(score>=1&&rsi<55){idealEntry=s1?fmtP(s1*1.002):fmtP(cur*0.995);entryReason='إشارة متوسطة — انتظر رجوع للدعم';statusClass='est-wait';statusIcon='⏳';statusText='انتظر نقطة دخول أفضل';}
+  else if(rsi>70){idealEntry=s1?fmtP(s1):fmtP(cur*0.97);entryReason='RSI مرتفع — لا تدخل الآن';statusClass='est-sell';statusIcon='🚫';statusText='ليس وقت الدخول';}
+  else if(score<=-2){idealEntry=fmtP(cur*0.95);entryReason='إشارات هبوط — انتظر استقرار';statusClass='est-sell';statusIcon='⛔';statusText='سوق هابط — لا تشتري';}
+  else{idealEntry=s1?fmtP(s1*1.001):fmtP(cur*0.99);entryReason='السوق محايد — انتظر إشارة أوضح';statusClass='est-wait';statusIcon='💡';statusText='انتظر تأكيد الاتجاه';}
+  const sl=s1?fmtP(s1*0.997):fmtP(cur*0.97);
+  const tp1=r1?fmtP(r1):fmtP(cur*1.05);
+  const riskRaw=s1?(cur-s1*0.997):cur*0.03;
+  const rewRaw=r1?(r1-cur):cur*0.05;
+  const rr=riskRaw>0?(rewRaw/riskRaw).toFixed(2):'—';
+  wrap.innerHTML=`
+    <div class="entry-card">
+      <div class="entry-status ${statusClass}" style="margin-bottom:12px;">${statusIcon} ${statusText}</div>
+      <div class="entry-row"><span class="entry-row-lbl">السعر الحالي</span><span class="entry-row-val">${fmtP(cur)}</span></div>
+      <div class="entry-row"><span class="entry-row-lbl">نقطة الدخول المثلى</span><span class="entry-row-val" style="color:var(--cyan)">${idealEntry}</span></div>
+      <div class="entry-row"><span class="entry-row-lbl">وقف الخسارة</span><span class="entry-row-val" style="color:var(--red)">${sl}</span></div>
+      <div class="entry-row"><span class="entry-row-lbl">الهدف الأول</span><span class="entry-row-val" style="color:var(--green)">${tp1}</span></div>
+      <div class="entry-row"><span class="entry-row-lbl">R:R</span><span class="entry-row-val" style="color:var(--gold)">1 : ${rr}</span></div>
+      <div class="entry-row"><span class="entry-row-lbl">الاتجاه</span><span class="entry-row-val">${trend}</span></div>
+      <div style="font-family:var(--font-ar);font-size:12px;color:var(--text2);margin-top:10px;line-height:1.9;">${entryReason}</div>
+      <button onclick="openModal()" style="width:100%;margin-top:14px;padding:12px;background:var(--gold-g);border:none;border-radius:10px;color:#000;font-family:var(--font-ar);font-size:14px;font-weight:700;cursor:pointer;">📥 سجّل صفقة الآن</button>
+    </div>
+  `;
+}
+
+function renderMobileTrade(){
+  if(!currentTrade||!ta.price) return;
+  const {buyPrice,qty}=currentTrade;
+  const cur=ta.price;
+  const pnlPct=((cur-buyPrice)/buyPrice*100);
+  const pnlUsd=(cur-buyPrice)*qty;
+  const isProfit=pnlPct>=0;
+  const card=document.getElementById('m-main-port-card');
+  if(!card) return;
+  card.className='port-card '+(isProfit?'profit-card':'loss-card');
+  const coinEl=document.getElementById('m-pc-coin'); if(coinEl) coinEl.textContent=currentTrade.symbol||currentSymbol;
+  const badge=document.getElementById('m-pc-pnl'); if(badge){badge.textContent=(isProfit?'+':'')+pnlPct.toFixed(2)+'%';badge.className='port-pnl-badge '+(isProfit?'pnl-pos':'pnl-neg');}
+  const bpEl=document.getElementById('m-pc-buy-price'); if(bpEl) bpEl.textContent=fmtP(buyPrice);
+  const curEl=document.getElementById('m-pc-current'); if(curEl) curEl.textContent=fmtP(cur);
+  const qtyEl=document.getElementById('m-pc-qty'); if(qtyEl) qtyEl.textContent=qty.toFixed(qty<0.01?8:qty<1?4:2);
+  const pnlUsdEl=document.getElementById('m-pc-pnl-usd'); if(pnlUsdEl){pnlUsdEl.textContent=(isProfit?'+':'')+pnlUsd.toFixed(2)+' $';pnlUsdEl.style.color=isProfit?'var(--green)':'var(--red)';}
+  const tp1=ta.levels&&ta.levels.R[0]?ta.levels.R[0]:buyPrice*1.05;
+  const tp2=ta.levels&&ta.levels.R[1]?ta.levels.R[1]:buyPrice*1.10;
+  const sl=ta.levels&&ta.levels.S[0]?ta.levels.S[0]*0.998:buyPrice*0.97;
+  const range=tp1-sl;
+  const pos=Math.max(0,Math.min(100,((cur-sl)/range*100)));
+  const entryPos=Math.max(0,Math.min(100,((buyPrice-sl)/range*100)));
+  const fill=document.getElementById('m-pnl-fill'); if(fill){fill.style.width=pos+'%';fill.style.background=isProfit?'var(--green)':'var(--red)';}
+  const marker=document.getElementById('m-entry-marker'); if(marker) marker.style.right=(100-entryPos)+'%';
+  const tr=document.getElementById('m-targets-row');
+  if(tr){
+    const tp1Pct=((tp1-buyPrice)/buyPrice*100).toFixed(1);
+    const tp2Pct=((tp2-buyPrice)/buyPrice*100).toFixed(1);
+    const slPct=((sl-buyPrice)/buyPrice*100).toFixed(1);
+    tr.innerHTML=`
+      <div class="target-item target-tp1"><span class="target-lbl">هدف ١</span><span class="target-price">${fmtP(tp1)}</span><span class="target-pct">+${tp1Pct}%</span></div>
+      <div class="target-item target-tp2"><span class="target-lbl">هدف ٢</span><span class="target-price">${fmtP(tp2)}</span><span class="target-pct">+${tp2Pct}%</span></div>
+      <div class="target-item target-sl"><span class="target-lbl">وقف الخسارة</span><span class="target-price">${fmtP(sl)}</span><span class="target-pct">${slPct}%</span></div>
+    `;
+  }
+  const rec=document.getElementById('m-trade-recommendation-wrap');
+  if(rec){
+    const rsi=ta.rsi||50;const score=ta.score||0;const macdBull=ta.macd&&ta.macd.hist>0;
+    let html='';
+    if(cur<=sl*1.005){html=`<div class="trade-recommendation rec-sell-now"><div class="rec-header"><span class="rec-icon">🚨</span><span class="rec-title">بيع فوراً — وصلت للـ Stop Loss</span></div><div class="rec-body">السعر وصل وقف الخسارة <b>${fmtP(sl)}</b>. بيع فوري لحماية رأس المال.</div></div>`;}
+    else if(rsi>75||cur>=tp1*0.998){html=`<div class="trade-recommendation rec-tp"><div class="rec-header"><span class="rec-icon">🎯</span><span class="rec-title">${cur>=tp1*0.998?'وصلت الهدف الأول!':'RSI مرتفع'}</span></div><div class="rec-body">بيع 50% عند الهدف الأول، احتفظ بالباقي للهدف الثاني <b>${fmtP(tp2)}</b>.</div></div>`;}
+    else if(score>=2&&macdBull){html=`<div class="trade-recommendation rec-hold"><div class="rec-header"><span class="rec-icon">🟢</span><span class="rec-title">احتفظ — السوق لصالحك</span></div><div class="rec-body">Score = <b>${score.toFixed(1)}</b> | MACD صاعد | الهدف: <b>${fmtP(tp1)}</b></div></div>`;}
+    else{html=`<div class="trade-recommendation rec-hold"><div class="rec-header"><span class="rec-icon">⏳</span><span class="rec-title">احتفظ — انتظر إشارة</span></div><div class="rec-body">الربح/الخسارة: <b>${pnlPct.toFixed(2)}%</b> | الهدف: <b>${fmtP(tp1)}</b></div></div>`;}
+    rec.innerHTML=html;
+  }
+}
+
+// ══ MOBILE AI PANEL ══
+function renderMobileAI(){
+  const el=document.getElementById('mp-ai');if(!el)return;
+  el.innerHTML=`
+    <div class="m-ai-header">
+      <div class="m-ai-title">⬡ الذكاء الاصطناعي</div>
+      <div class="m-ai-sub">تحليل متعدد المحركات مع Fallback تلقائي</div>
+    </div>
+    <div class="ai-engine-row" id="m-aiEngineRow"></div>
+    <div class="ai-progress" id="m-aiProgress" style="display:none"><div class="ai-progress-fill" id="m-aiProgressFill"></div></div>
+    <div class="ai-thinking-bar" id="m-aiBar"></div>
+    <div class="ai-thinking-msg" id="m-aiMsg"></div>
+    <div class="ai-src-badge-wrap"><span class="ai-src-badge" id="m-ai-src-badge">⬡ جاهز</span></div>
+    <div class="ai-output" id="m-aiOut"><span class="ai-placeholder">${!ta.price?'شغّل النظام الأول':'اضغط الزر لتشغيل التحليل'}</span></div>
+    <button onclick="askAI()" ${!ta.price?'disabled':''} style="margin-top:14px;width:100%;padding:14px;background:linear-gradient(135deg,var(--purple),#2563eb);border:none;border-radius:12px;color:white;font-family:var(--font-ar);font-size:15px;font-weight:700;cursor:pointer;">⬡ تحليل بالذكاء الاصطناعي</button>
+    ${!ta.price?'<div style="text-align:center;font-family:var(--font-ar);font-size:11px;color:var(--text3);margin-top:8px;">⚠️ شغّل النظام أولاً</div>':''}
+  `;
+  buildAIEngineUI(true);
+}
+
+// ══ DESKTOP PANEL SWITCH ══
+function renderDesktopPanel(tab){
+  document.querySelectorAll('.r-tab').forEach(b=>b.classList.remove('active'));
+  const activeBtn=document.querySelector('.r-tab[onclick*=\''+tab+'\']');
+  if(activeBtn) activeBtn.classList.add('active');
+  ['signal','levels','ai','portfolio'].forEach(id=>{
+    const el=document.getElementById('rtab-'+id);if(el) el.style.display='none';
+  });
+  const target=document.getElementById('rtab-'+tab);
+  if(target){
+    target.style.display=(tab==='ai'?'flex':'block');
+    if(tab==='portfolio'){
+      if(tradeMode==='none'&&ta.price) renderEntryAnalysis();
+      if(tradeMode==='buy'&&currentTrade&&ta.price) renderTradeCard();
+    }
+  }
+}
+
+// ══ INIT MOBILE RESPONSIVENESS ══
+function initMobileLayout(){
+  if(isMobile()){
+    const chartZone=document.querySelector('.chart-zone');
+    const mobileView=document.getElementById('mobileView');
+    if(chartZone) chartZone.style.display='flex';
+    if(mobileView) mobileView.style.display='none';
+    document.getElementById('bnav-chart-view').classList.add('active');
+  }
+}
+window.addEventListener('resize',function(){
+  if(!isMobile()){
+    const chartZone=document.querySelector('.chart-zone');
+    const mobileView=document.getElementById('mobileView');
+    if(chartZone) chartZone.style.display='flex';
+    if(mobileView) mobileView.style.display='none';
+  }
+});
+document.addEventListener('DOMContentLoaded', initMobileLayout);
+
 </script>
 </body>
 </html>
