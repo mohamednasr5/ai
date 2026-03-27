@@ -406,7 +406,7 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
     flex: 1;
     min-height: 0;
     width: 100%;
-    height: auto !important; /* إلغاء الطول الثابت */
+    height: auto !important; /* إلغاء الط الطول الثابت */
     display: flex !important;
   }
   .mobile-view {
@@ -442,6 +442,50 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
   .right-panel{display:flex!important;}
   .mobile-view,.bottom-nav{display:none!important;}
   .chart-zone{display:flex!important;}
+}
+
+/* ══ إعدادات زر البدء العائم للموبايل ══ */
+.mobile-fab-wrapper {
+  display: none;
+}
+@media(max-width: 768px) {
+  /* إخفاء زر ابدأ التقليدي في الأعلى */
+  #launchBtn {
+    display: none !important;
+  }
+  /* السماح للعناصر بالظهور خارج حدود الناف بار */
+  .bottom-nav {
+    overflow: visible !important; 
+  }
+  /* حاوية الزر العائم */
+  .mobile-fab-wrapper {
+    display: flex;
+    position: absolute;
+    top: -30px; /* مقدار بروز الزر لأعلى */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+  }
+  /* تصميم الزر (أخضر مع حواف بنفس لون الناف بار) */
+  .mobile-fab {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #00e676, #00b050);
+    border: 5px solid #080910; /* يعطي تأثير القطع الدائري */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 230, 118, 0.4);
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    padding-left: 4px; /* لتوسيط علامة الـ Play بصرياً */
+  }
+  .mobile-fab:active {
+    transform: scale(0.9);
+  }
 }
 </style>
 
@@ -704,6 +748,11 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
   <div class="bottom-nav">
     <button class="bnav-btn active" id="bnav-chart-view" onclick="mobileNav('chart-view')"><span class="bnav-icon">📈</span><span class="bnav-label">الرسم</span></button>
     <button class="bnav-btn" id="bnav-signal" onclick="mobileNav('signal')"><span class="bnav-icon">🚦</span><span class="bnav-label">الإشارة</span></button>
+    
+    <div class="mobile-fab-wrapper">
+      <button class="mobile-fab" onclick="startSystem()" data-tt="launchBtn">▶</button>
+    </div>
+
     <button class="bnav-btn" id="bnav-indicators" onclick="mobileNav('indicators')"><span class="bnav-icon">📊</span><span class="bnav-label">المؤشرات</span></button>
     <button class="bnav-btn" id="bnav-portfolio" onclick="mobileNav('portfolio')"><span class="bnav-icon">💼</span><span class="bnav-label">المحفظة</span></button>
     <button class="bnav-btn" id="bnav-ai" onclick="mobileNav('ai')"><span class="bnav-icon">⬡</span><span class="bnav-label">AI</span></button>
@@ -1423,7 +1472,6 @@ const TT_DATA = {
     var v=document.getElementById('chart-chg')?document.getElementById('chart-chg').textContent:'—';
     return 'نسبة التغير عن سعر الافتتاح.<br><br>🟢 موجب = ارتفع | 🔴 سالب = انخفض<br><br><div class="tt-val-row"><span>التغير</span><span>'+v+'</span></div>';
   }},
-  // ══ مفاتيح إضافية لجميع العناصر ══
   coinInput:{icon:'🔤',title:'رمز العملة',build:function(){
     var v=document.getElementById('coinInput')?document.getElementById('coinInput').value.toUpperCase()||'—':'—';
     return '<b>اكتب رمز العملة اللي عايز تحللها</b><br><br>مثال: <b>BTC</b> أو <b>ETH</b> أو <b>SOL</b><br><br>💡 اكتب الرمز بالإنجليزي واضغط Enter<div class="tt-val-row"><span>الرمز الحالي</span><span>'+v+'</span></div>';
@@ -1589,7 +1637,7 @@ const TT_DATA = {
 };
 
 // ══════════════════════════════════════════════════════════
-//  TOOLTIP ENGINE — نظام شامل لجميع عناصر الصفحة
+//  TOOLTIP ENGINE — نظام شامل لجميع عناصر الصفحة (تم تعديله للمس)
 // ══════════════════════════════════════════════════════════
 var ttEl=document.getElementById('smart-tooltip');
 var ttTitle=document.getElementById('tt-title-text');
@@ -1664,18 +1712,76 @@ function detectTTKey(el){
   return null;
 }
 
-document.addEventListener('mousemove',function(e){
-  var detected=detectTTKey(e.target);
-  if(!detected){hideTooltip();lastTTKey=null;return;}
-  var key=detected.key;
-  if(!TT_DATA[key]){hideTooltip();lastTTKey=null;return;}
-  if(key===lastTTKey){moveTooltip(e);return;}
-  lastTTKey=key;
-  clearTimeout(ttTimer);
-  ttTimer=setTimeout(function(){showTooltip(e,key);},160);
-  moveTooltip(e);
-});
-document.addEventListener('mouseleave',function(){hideTooltip();lastTTKey=null;});
+// ══ التحقق مما إذا كان الجهاز يدعم اللمس ══
+var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+if (!isTouchDevice) {
+  // للكمبيوتر (الماوس)
+  document.addEventListener('mousemove', function(e){
+    var detected = detectTTKey(e.target);
+    if(!detected){ hideTooltip(); lastTTKey = null; return; }
+    var key = detected.key;
+    if(!TT_DATA[key]){ hideTooltip(); lastTTKey = null; return; }
+    if(key === lastTTKey){ moveTooltip(e); return; }
+    lastTTKey = key;
+    clearTimeout(ttTimer);
+    ttTimer = setTimeout(function(){ showTooltip(e, key); }, 160);
+    moveTooltip(e);
+  });
+  document.addEventListener('mouseleave', function(){ hideTooltip(); lastTTKey = null; });
+} else {
+  // للموبايل (اللمس / النقر)
+  document.addEventListener('click', function(e){
+    var detected = detectTTKey(e.target);
+    if(!detected || !TT_DATA[detected.key]){
+      hideTooltip();
+      lastTTKey = null;
+      return;
+    }
+    var key = detected.key;
+    // إذا ضغط على نفس العنصر المفتوح يتم إغلاق الشرح
+    if(key === lastTTKey && ttEl.classList.contains('visible')){
+      hideTooltip();
+      lastTTKey = null;
+      return;
+    }
+    lastTTKey = key;
+    showTooltipTouch(e, key);
+  });
+}
+
+// دالة مخصصة لعرض الشرح على الموبايل مع ضمان عدم الخروج عن الشاشة
+function showTooltipTouch(e, key){
+  var d = TT_DATA[key];
+  ttIcon.textContent = d.icon;
+  ttTitle.textContent = d.title;
+  ttBody.innerHTML = d.build();
+  ttEl.classList.add('visible');
+
+  // الانتظار لحظة صغيرة حتى يأخذ العنصر أبعاده الجديدة
+  setTimeout(function() {
+    var tw = ttEl.offsetWidth || 270;
+    var th = ttEl.offsetHeight || 160;
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    
+    var x = e.clientX;
+    var y = e.clientY;
+
+    // محاذاة أفقية: التوسيط فوق مكان الضغطة مع منع الخروج يميناً أو يساراً
+    var left = x - (tw / 2);
+    if (left < 10) left = 10;
+    else if (left + tw > vw - 10) left = vw - tw - 10;
+
+    // محاذاة رأسية: العرض أعلى الإصبع، وإذا لم توجد مساحة يعرض أسفله
+    var top = y - th - 20;
+    if (top < 10) top = y + 20;
+
+    ttEl.style.left = left + 'px';
+    ttEl.style.top = top + 'px';
+  }, 10);
+}
+
 function showTooltip(e,key){
   var d=TT_DATA[key];
   ttIcon.textContent=d.icon;
