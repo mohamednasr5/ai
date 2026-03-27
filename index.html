@@ -112,13 +112,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
   .mobile-view{display:none!important;}
 }
 
-/* MOBILE */
-@media(max-width:768px){
-  .left-panel,.right-panel{display:none!important;}
-  .chart-zone{display:flex!important;}
-  .mobile-view{display:flex;}
-}
-
 /* LEFT PANEL */
 .left-panel{background:rgba(10,16,32,0.85);border-left:1px solid var(--border);flex-direction:column;overflow:hidden;}
 .panel-header{padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--font-ar);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:flex;align-items:center;gap:8px;}
@@ -178,12 +171,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 .r-body::-webkit-scrollbar{width:3px;}
 .r-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
-/* MOBILE VIEW */
-.mobile-view{flex:1;min-height:0;flex-direction:column;overflow:hidden;background:rgba(10,16,32,0.85);}
-.mobile-panel{flex:1;overflow-y:auto;padding:14px;display:none;-webkit-overflow-scrolling:touch;}
-.mobile-panel.active{display:block;}
-.mobile-panel::-webkit-scrollbar{display:none;}
-
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--bottomnav-h) + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(8,9,16,0.97);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:100;backdrop-filter:blur(20px);}
 .bottom-nav::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--gold),transparent);}
@@ -236,7 +223,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 /* RSI */
 .rsi-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;cursor:help;}
 .rsi-header{font-family:var(--font-mono);font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:600;}
-.rsi-bar-wrap{}
 .rsi-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:4px;}
 .rsi-bar-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
 .rsi-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--text3);}
@@ -328,16 +314,6 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 .rec-icon{font-size:16px;}
 .rec-title{font-family:var(--font-ar);font-size:12px;font-weight:700;color:var(--text);}
 .rec-body{font-family:var(--font-ar);font-size:11px;color:var(--text2);line-height:2;}
-.entry-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
-.entry-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
-.entry-row:last-of-type{border-bottom:none;}
-.entry-row-lbl{font-family:var(--font-ar);font-size:11px;color:var(--text3);}
-.entry-row-val{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);}
-.entry-status{padding:8px 14px;border-radius:8px;font-family:var(--font-ar);font-size:12px;font-weight:700;text-align:center;margin-top:10px;}
-.est-buy{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.3);}
-.est-wait{background:rgba(240,165,0,0.1);color:var(--gold);border:1px solid rgba(240,165,0,0.3);}
-.est-sell{background:rgba(255,61,87,0.1);color:var(--red);border:1px solid rgba(255,61,87,0.3);}
-.add-trade-btn{padding:11px;background:var(--gold-g);border:none;border-radius:10px;color:#000;font-family:var(--font-ar);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.3s;}
 
 /* MOBILE PANELS */
 .m-sig-hero{padding:20px;text-align:center;border-radius:14px;margin-bottom:14px;border:1px solid var(--border);}
@@ -393,13 +369,12 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
 /* SAFE AREA */
-@media(max-width:768px){.main-content{padding-bottom:calc(var(--bottomnav-h) + var(--safe-bottom));}}
 @media(max-width:768px){.desktop-only{display:none!important;}}
 @media(min-width:769px){.mobile-only{display:none!important;}}
 </style>
 
 <style>
-/* ══ MOBILE EXTRA CSS ══ */
+/* ══ MOBILE EXTRA CSS (Flexbox Fix) ══ */
 .entry-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
 .entry-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
 .entry-row:last-of-type{border-bottom:none;}
@@ -415,15 +390,51 @@ body{font-family:var(--font-ar);background:var(--void);color:var(--text);}
 .ai-src-badge-wrap{text-align:center;margin-bottom:8px;}
 .ai-src-badge{padding:4px 12px;background:rgba(124,77,255,0.1);border:1px solid rgba(124,77,255,0.2);border-radius:20px;font-family:var(--font-mono);font-size:10px;color:#aa88ff;}
 
-/* Mobile layout */
+/* Mobile layout - تم الضبط لتجربة تطبيق احترافي */
 @media(max-width:768px){
-  .main-content{display:block!important;padding-bottom:calc(var(--bottomnav-h) + var(--safe-bottom));}
-  .left-panel,.right-panel{display:none!important;}
-  .chart-zone{height:calc(100vh - var(--topbar-h) - var(--bottomnav-h) - 32px - var(--safe-bottom));display:flex!important;}
-  .mobile-view{position:absolute;top:var(--topbar-h);left:0;right:0;bottom:calc(var(--bottomnav-h) + var(--safe-bottom));display:none;flex-direction:column;overflow:hidden;background:var(--deep);}
-  .mobile-panel{flex:1;overflow-y:auto;padding:14px;display:none;-webkit-overflow-scrolling:touch;}
-  .mobile-panel.active{display:block;}
-  .bottom-nav{display:flex!important;}
+  .main-content {
+    display: flex !important;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    padding-bottom: calc(var(--bottomnav-h) + var(--safe-bottom));
+  }
+  .left-panel, .right-panel { 
+    display: none !important; 
+  }
+  .chart-zone {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    height: auto !important; /* إلغاء الطول الثابت */
+    display: flex !important;
+  }
+  .mobile-view {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    position: relative; /* إلغاء الـ Absolute لمنع التداخل */
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--deep);
+  }
+  .mobile-panel {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    padding: 14px;
+    padding-bottom: 40px; /* مساحة تنفس إضافية أسفل المحتوى */
+    display: none;
+    -webkit-overflow-scrolling: touch; /* سكرول ناعم مثل الآيفون */
+  }
+  .mobile-panel.active { 
+    display: block; 
+  }
+  .bottom-nav { 
+    display: flex !important; 
+  }
 }
 @media(min-width:769px){
   .main-content{display:grid!important;grid-template-columns:250px 1fr 340px;}
@@ -952,8 +963,7 @@ function renderEntryAnalysis() {
       <div class="entry-row"><span class="entry-row-lbl">الهدف الأول</span><span class="entry-row-val" style="color:var(--green)">${tp1}</span></div>
       <div class="entry-row"><span class="entry-row-lbl">نسبة المخاطرة/العائد</span><span class="entry-row-val" style="color:var(--gold)">1 : ${rr}</span></div>
       <div class="entry-row"><span class="entry-row-lbl">الاتجاه</span><span class="entry-row-val">${trend}</span></div>
-      <div class="entry-row
-      <span class="entry-row-lbl">نتيجة التحليل</span><span class="entry-row-val" style="color:var(--purple)">${score > 0 ? '+' : ''}${score.toFixed(1)}</span></div>
+      <div class="entry-row"><span class="entry-row-lbl">نتيجة التحليل</span><span class="entry-row-val" style="color:var(--purple)">${score > 0 ? '+' : ''}${score.toFixed(1)}</span></div>
       <div class="entry-status ${statusClass}">${statusIcon} ${statusText}</div>
       <div style="font-family:var(--font-ar);font-size:11px;color:var(--text2);margin-top:8px;line-height:1.8;">${entryReason}</div>
     </div>
@@ -1162,17 +1172,19 @@ const AI_ENGINES = [
   }
 ];
 
-function buildAIEngineUI() {
-  const row = $('aiEngineRow');
+function buildAIEngineUI(isMobile=false) {
+  const rowId = isMobile ? 'm-aiEngineRow' : 'aiEngineRow';
+  const row = $(rowId);
   if (!row) return;
   row.innerHTML = AI_ENGINES.map((e, i) =>
-    `<span class="ai-source-badge" id="ai-eng-${i}" data-tt="aiEngines">${e.name}</span>`
+    `<span class="ai-source-badge" id="${isMobile?'m-':''}ai-eng-${i}" data-tt="aiEngines">${e.name}</span>`
   ).join('');
 }
 function setEngineBadge(i, state) {
-  const b = $('ai-eng-' + i);
-  if (!b) return;
-  b.className = 'ai-source-badge' + (state === 'active' ? ' active' : state === 'failed' ? ' failed' : '');
+  const b1 = $('ai-eng-' + i);
+  const b2 = $('m-ai-eng-' + i);
+  if (b1) b1.className = 'ai-source-badge' + (state === 'active' ? ' active' : state === 'failed' ? ' failed' : '');
+  if (b2) b2.className = 'ai-source-badge' + (state === 'active' ? ' active' : state === 'failed' ? ' failed' : '');
 }
 
 function generateLocalAnalysis(ta) {
@@ -1212,22 +1224,36 @@ function generateLocalAnalysis(ta) {
 
 async function askAI() {
   if (!ta.price) { toast('⚠️ شغّل النظام الأول'); return; }
-  rTab(document.querySelector('.r-tab:last-child'), 'ai');
-  document.querySelectorAll('.r-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.r-tab').forEach(b => {
-    if (b.textContent.includes('ذكاء')) b.classList.add('active');
-  });
-  const aiOut = $('aiOut'), aiBar = $('aiBar'), aiMsg = $('aiMsg');
-  const aiProg = $('aiProgress'), aiProgFill = $('aiProgressFill');
-  const aiSrc = $('ai-src-badge');
+  
+  if (isMobile()) {
+    mobileNav('ai');
+  } else {
+    rTab(document.querySelector('.r-tab:nth-child(3)'), 'ai');
+    document.querySelectorAll('.r-tab').forEach(b => b.classList.remove('active'));
+    document.querySelector('.r-tab:nth-child(3)').classList.add('active');
+  }
+
+  const isMob = isMobile();
+  const aiOut = $(isMob ? 'm-aiOut' : 'aiOut');
+  const aiBar = $(isMob ? 'm-aiBar' : 'aiBar');
+  const aiMsg = $(isMob ? 'm-aiMsg' : 'aiMsg');
+  const aiProg = $(isMob ? 'm-aiProgress' : 'aiProgress');
+  const aiProgFill = $(isMob ? 'm-aiProgressFill' : 'aiProgressFill');
+  const aiSrc = $(isMob ? 'm-ai-src-badge' : 'ai-src-badge');
+  
   aiOut.innerHTML = '';
   aiBar.style.display = 'block';
   aiMsg.style.display = 'block';
   aiProg.classList.add('show');
   aiProgFill.style.width = '5%';
-  $('aiBtn').disabled = true;
-  $('aiBtn').classList.remove('pulsing');
-  buildAIEngineUI();
+  
+  const btnTop = $('aiBtn');
+  if(btnTop) {
+    btnTop.disabled = true;
+    btnTop.classList.remove('pulsing');
+  }
+
+  buildAIEngineUI(isMob);
   const s1 = ta.levels && ta.levels.S[0] ? fmtP(ta.levels.S[0]) : '—';
   const r1 = ta.levels && ta.levels.R[0] ? fmtP(ta.levels.R[0]) : '—';
   const prompt =
@@ -1247,6 +1273,7 @@ async function askAI() {
     `4️⃣ أهداف الربح ووقف الخسارة\n` +
     `5️⃣ المخاطرة للعائد R:R\n` +
     `6️⃣ نصيحة عملية للتداول`;
+    
   let aiText = null;
   const totalEngines = AI_ENGINES.length;
   for (let i = 0; i < totalEngines; i++) {
@@ -1275,11 +1302,13 @@ async function askAI() {
       aiText = null;
     }
   }
+  
   aiProgFill.style.width = '100%';
   setTimeout(() => { aiProg.classList.remove('show'); }, 600);
   aiBar.style.display = 'none';
   aiMsg.style.display = 'none';
   aiOut.innerHTML = '';
+  
   if (!aiText) aiText = generateLocalAnalysis(ta);
   const cleanText = aiText.replace(/\*\*/g, '').replace(/\*/g, '');
   let idx = 0;
@@ -1297,8 +1326,11 @@ async function askAI() {
       cur.remove();
     }
   }, 7);
-  $('aiBtn').disabled = false;
-  $('aiBtn').classList.add('pulsing');
+  
+  if(btnTop) {
+    btnTop.disabled = false;
+    btnTop.classList.add('pulsing');
+  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1567,11 +1599,9 @@ var ttTimer=null;
 var lastTTKey=null;
 
 function detectTTKey(el){
-  // أولاً: data-tt المباشر
   var node=el.closest('[data-tt]');
   if(node) return {key:node.getAttribute('data-tt')};
 
-  // ثانياً: كشف بالـ id
   var idMap={
     'coinInput':'coinInput','quoteSelect':'quoteSelect','tfSelect':'tfSelect',
     'launchBtn':'launchBtn','aiBtn':'aiBtn','liveDot':'connStatus',
@@ -1597,14 +1627,12 @@ function detectTTKey(el){
     'btn-no-trade':'btnNoTrade','btn-has-trade':'btnHasTrade',
     'ai-src-badge':'aiSource'
   };
-  // تحقق من العنصر نفسه وأي أب له id
   var check=el;
   for(var d=0;d<4;d++){
     if(check&&check.id&&idMap[check.id]) return {key:idMap[check.id]};
     if(check&&check.parentElement) check=check.parentElement; else break;
   }
 
-  // ثالثاً: كشف بالـ class
   var classMap=[
     ['mcard','mcard_generic'],['ind-item','ind_generic'],
     ['mini-chip','mini_generic'],['agrid-cell','agrid_generic'],
@@ -1732,7 +1760,6 @@ window.addEventListener('load',function(){
   document.getElementById('coinInput').addEventListener('input',function(e){
     e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
   });
-  buildAIEngineUI();
 });
 
 // ══════════════════════════════════════════════════════════
@@ -1844,18 +1871,24 @@ async function fetch24h(){
 }
 
 // ══════════════════════════════════════════════════════════
-//  WEBSOCKET
+//  WEBSOCKET (تم دمج التحديث اللحظي للسعر)
 // ══════════════════════════════════════════════════════════
 const OKX_WS=['wss://ws.okx.com:8443/ws/v5/public','wss://wsaws.okx.com:8443/ws/v5/public','wss://wsap.okx.com:8443/ws/v5/public'];
+
 function connectWS(){
   const instId=toOkxId(currentSymbol);
   const channel=TF_WS[currentTF]||'candle5m';
   const wsUrl=OKX_WS[wsRetries%OKX_WS.length];
   try{ws=new WebSocket(wsUrl);}catch(e){onWsFail('فشل فتح الاتصال');return;}
   const cto=setTimeout(()=>{if(ws.readyState!==WebSocket.OPEN){ws.close();onWsFail('انتهت مهلة الاتصال');}},12000);
+  
   ws.onopen=()=>{
     clearTimeout(cto);wsRetries=0;wsActive=true;
-    ws.send(JSON.stringify({op:'subscribe',args:[{channel,instId}]}));
+    // إضافة قناة tickers للحصول على السعر اللحظي الفائق السرعة
+    ws.send(JSON.stringify({op:'subscribe',args:[
+      {channel,instId},
+      {channel:'tickers',instId}
+    ]}));
     $('liveDot').classList.add('on');
     $('connLabel').textContent='متصل مباشر';
     $('launchBtn').disabled=false;$('launchBtn').textContent='▶ ابدأ';
@@ -1864,10 +1897,19 @@ function connectWS(){
     hideLoadProgress();
     setStatus('🟢 متصل — '+instId+' — '+currentTF);
   };
+  
   ws.onmessage=(e)=>{
     try{
       const d=JSON.parse(e.data);
-            if(!d.data||!d.arg)return;
+      if(!d.data||!d.arg)return;
+
+      // 1. تحديث السعر والمحفظة لحظياً 
+      if(d.arg.channel === 'tickers'){
+        const tick = d.data[0];
+        updateInstantPrice(parseFloat(tick.last));
+      }
+
+      // 2. تحديث الشموع والمؤشرات الفنية
       if(d.arg.channel&&d.arg.channel.startsWith('candle')){
         const arr=d.data[0];
         const c={
@@ -1884,21 +1926,37 @@ function connectWS(){
           candles.update(c);
         }
         updCandleCount();
-        const price=c.close;
-        const priceEl=$('chart-price');
-        priceEl.textContent=fmtP(price);
-        if(price>prevPrice){priceEl.className='price-up';setTimeout(()=>priceEl.className='',600);}
-        else if(price<prevPrice){priceEl.className='price-down';setTimeout(()=>priceEl.className='',600);}
-        prevPrice=price;
+        updateInstantPrice(c.close); // كضمان إضافي للتزامن
         computeTA();
       }
     }catch(e){}
   };
+  
   ws.onerror=()=>{onWsFail('خطأ في الاتصال');};
   ws.onclose=()=>{
     if(wsActive){wsActive=false;onWsFail('انقطع الاتصال');}
   };
 }
+
+// دالة مساعدة لتحديث السعر اللحظي 
+function updateInstantPrice(price) {
+  if(!price || isNaN(price)) return;
+  const priceEl=$('chart-price');
+  if(!priceEl) return;
+  
+  priceEl.textContent=fmtP(price);
+  if(price>prevPrice){priceEl.className='price-up';setTimeout(()=>priceEl.className='',600);}
+  else if(price<prevPrice){priceEl.className='price-down';setTimeout(()=>priceEl.className='',600);}
+  
+  prevPrice=price;
+  ta.price = price; 
+  
+  if(tradeMode==='buy' && currentTrade) {
+    renderTradeCard();
+    if(typeof renderMobileTrade === 'function' && isMobile()) renderMobileTrade();
+  }
+}
+
 function onWsFail(msg){
   $('liveDot').classList.remove('on');
   $('connLabel').textContent='غير متصل';
@@ -1949,7 +2007,6 @@ function computeTA(){
     const e12=calcEMA(arr,12),e26=calcEMA(arr,26);
     if(!e12||!e26)return null;
     const macdLine=e12-e26;
-    // signal line (9-period EMA of macd) — simplified
     const macdArr=[];
     for(let i=26;i<=arr.length;i++){
       const s=arr.slice(0,i);
@@ -1999,7 +2056,6 @@ function computeTA(){
   }
 
   // Compute all
-  ta.price   = closes[n-1];
   ta.rsi     = calcRSI(closes,14);
   ta.ma20    = calcMA(closes,20);
   ta.ma50    = calcMA(closes,50);
@@ -2194,8 +2250,6 @@ function updateUI(){
   if(tradeMode==='buy'&&currentTrade) renderTradeCard();
   if(tradeMode==='none'&&ta.price) renderEntryAnalysis();
 }
-
-
 
 function calcModalTotal(){
   const bp=parseFloat(document.getElementById('modal-buy-price').value)||0;
@@ -2491,7 +2545,8 @@ function initMobileLayout(){
     const mobileView=document.getElementById('mobileView');
     if(chartZone) chartZone.style.display='flex';
     if(mobileView) mobileView.style.display='none';
-    document.getElementById('bnav-chart-view').classList.add('active');
+    const btn=document.getElementById('bnav-chart-view');
+    if(btn) btn.classList.add('active');
   }
 }
 window.addEventListener('resize',function(){
@@ -2500,6 +2555,18 @@ window.addEventListener('resize',function(){
     const mobileView=document.getElementById('mobileView');
     if(chartZone) chartZone.style.display='flex';
     if(mobileView) mobileView.style.display='none';
+  } else {
+     // Ensure safe display if resized back to mobile
+     const activeBtn = document.querySelector('.bnav-btn.active');
+     if(activeBtn) {
+         if(activeBtn.id === 'bnav-chart-view'){
+             document.querySelector('.chart-zone').style.display='flex';
+             document.getElementById('mobileView').style.display='none';
+         } else {
+             document.querySelector('.chart-zone').style.display='none';
+             document.getElementById('mobileView').style.display='flex';
+         }
+     }
   }
 });
 document.addEventListener('DOMContentLoaded', initMobileLayout);
